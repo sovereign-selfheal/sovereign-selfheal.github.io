@@ -88,8 +88,8 @@ bash -c 'umask 077; read -rs -p "Vault password: " p &amp;&amp; printf "%s\n" "$
       <li>
         <b>Run the bootstrap</b>
 <pre>scripts/run-playbook.sh playbooks/site.yml</pre>
-        <p>It runs six stages: preflight, the GPU nodes and the pre-pull of the model images, the operators, the optional team users, the cluster prerequisites, and the Argo CD seed. The seed waits until every Argo CD application is synced and healthy. A full run takes about 35 to 60 minutes; the first start of the local model on a new GPU node is the longest part. A second run must report <code>changed=0</code>.</p>
-        <p>If AWS has no GPU capacity in a zone, the GPU machine stays in <code>Provisioning</code>. Give the zones in another order:</p>
+        <p>It runs six stages: preflight, the GPU nodes and the pre-pull of the model images, the operators, the optional team users, the cluster prerequisites, and the Argo CD seed. The seed waits until every Argo CD application is synced and healthy. A full run takes about 40 to 60 minutes; the first start of the local model on a new GPU node is the longest part. A second run must report <code>changed=0</code>.</p>
+        <p>If AWS has no GPU capacity in a zone, the GPU machine stays in <code>Provisioning</code>. List the zones in a different order:</p>
 <pre>scripts/run-playbook.sh playbooks/site.yml -e '{"gpu_node_prep_zones": ["us-east-2b", "us-east-2a", "us-east-2c"]}'</pre>
       </li>
       <li>
@@ -105,7 +105,7 @@ uv run ansible-playbook playbooks/validate.yml -e validation_disruptive=true   #
       </li>
       <li>
         <b>Use the demo</b>
-        <p>In the OpenShift console, open <i>Observe → Dashboards</i> in the project <code>maas-routing</code>, and <i>Observe → Traces</i>. The menu of the console has links to the router traces. To call the router yourself, take the API key of a tier and send a request to the model <code>auto</code>. A trace id in the request finds its decision among the logs of the two router replicas:</p>
+        <p>In the OpenShift console, open <i>Observe → Dashboards</i> in the project <code>maas-routing</code>, and <i>Observe → Traces</i>. The menu of the console has links to the router traces. To call the router yourself, take the API key of a tier and send a request to the model <code>auto</code>. With a trace id in the request, you can find its decision in the logs of the two router replicas:</p>
 <pre>KEY=$(oc get secret apikey-research-1 -n maas-routing -o jsonpath='{.data.api_key}' | base64 -d)
 DOMAIN=$(oc get ingresses.config/cluster -o jsonpath='{.spec.domain}')
 TRACE=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')

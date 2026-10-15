@@ -179,7 +179,7 @@ def build_scenarios(raw: Path, picks: dict, prompts: dict[str, dict]) -> dict:
     for p in picks["scenarios"]:
         spans = load_trace(raw / "raw/traces" / f"{p['trace']}.json")
         d = decision_from_trace(spans)
-        request = {"who": p.get("who") or f"a request of the team {d['team']}", "team": d["team"]}
+        request = {"who": p.get("who") or f"the {d['team']} team", "team": d["team"]}
         case = prompts.get(p.get("case", ""))
         if case and case.get("prompt"):
             request["text"] = " ".join(case["prompt"].split())

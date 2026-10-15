@@ -44,7 +44,7 @@ window.DEMO.scenarios = {
    "request": {
     "who": "the payments agent",
     "team": "agents-payments",
-    "summary": "The triage agent of the namespace payments investigates an alert. Its request reads metrics and logs of payments, a namespace labelled restricted.",
+    "summary": "The triage agent of the namespace payments investigates an alert. Its request carries metrics and logs of payments, a namespace labelled restricted.",
     "prompt_chars": 32681
    },
    "routed_to": "local-fast",
@@ -66,7 +66,7 @@ window.DEMO.scenarios = {
    "id": "short",
    "label": "Short question",
    "request": {
-    "who": "a request of the team research",
+    "who": "the research team",
     "team": "research",
     "text": "What is the capital of France?",
     "case": "R1",
@@ -126,7 +126,7 @@ window.DEMO.scenarios = {
    "id": "budget",
    "label": "SOTA budget used",
    "request": {
-    "who": "a request of the team validation",
+    "who": "the validation team",
     "team": "validation",
     "text": "Analyze the trade-offs between event sourcing and a classic CRUD model for an order management system. Explain why each one fits or not, with a short example.",
     "case": "B2",
@@ -156,7 +156,7 @@ window.DEMO.scenarios = {
    "id": "personal-data",
    "label": "Personal data",
    "request": {
-    "who": "a request of the team research",
+    "who": "the research team",
     "team": "research",
     "text": "Analizza questo profilo: Mario Rossi, codice fiscale RSSMRA80A01H501U, IBAN IT60X0542811101000000123456, telefono 347 1234567. Spiega perché il rischio di credito è alto.",
     "case": "R4",
@@ -191,7 +191,7 @@ window.DEMO.scenarios = {
    "id": "implicit",
    "label": "A person, without keywords",
    "request": {
-    "who": "a request of the team research",
+    "who": "the research team",
     "team": "research",
     "text": "Analyze the career options of Mario Rossi, an Italian engineer who lives in Milan.",
     "case": "D7",
@@ -226,7 +226,7 @@ window.DEMO.scenarios = {
    "id": "team-legal",
    "label": "Team legal",
    "request": {
-    "who": "a request of the team legal",
+    "who": "the legal team",
     "team": "legal",
     "text": "Compare in detail, step by step, the main approaches to database sharding and their trade-offs.",
     "case": "A3",
@@ -266,7 +266,7 @@ window.DEMO.scenarios = {
    "id": "clean",
    "label": "Long, clean and complex",
    "request": {
-    "who": "a request of the team research",
+    "who": "the research team",
     "team": "research",
     "text": "Analyze the trade-offs between event sourcing and a classic CRUD model for an order management system. Explain why each one fits or not, with a short example.",
     "case": "N5",

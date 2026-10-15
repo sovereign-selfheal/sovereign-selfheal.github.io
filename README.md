@@ -8,7 +8,7 @@ install it:
 
 | Part | What it shows | Data |
 |------|---------------|------|
-| Routing simulator | Real requests pass the four gates of the router, to the local model or the SOTA model | `data/scenarios.js` |
+| Routing simulator | Real requests go through the four gates of the router, to the local model or the SOTA model | `data/scenarios.js` |
 | Investigation replay | A real investigation, from the Alertmanager webhook to the incident | `data/investigation.js` |
 | Trace waterfall | Real router traces from Tempo, with the gates as child spans | `data/traces.js` |
 | Architecture map | Every component, what it does and its repository | `data/components.js` (written by hand) |

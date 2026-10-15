@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Sovereign Self-Healing</title>
-  <meta name="description" content="LLM routing and AI SRE triage on OpenShift AI: AI agents investigate incidents, and every LLM call passes a sovereign router that keeps sensitive data in the cluster.">
+  <meta name="description" content="LLM routing and AI SRE triage on OpenShift AI: AI agents investigate incidents, and every LLM call goes through a sovereign router that keeps sensitive data in the cluster.">
   <meta property="og:title" content="Sovereign Self-Healing: LLM Routing and AI SRE Triage on OpenShift AI">
-  <meta property="og:description" content="AI agents investigate incidents. Every LLM call passes a router that keeps sensitive data on the local GPU.">
+  <meta property="og:description" content="AI agents investigate incidents. Every LLM call goes through a router that keeps sensitive data on the local GPU.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://sovereign-selfheal.github.io/">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
@@ -44,13 +44,13 @@
         <p class="eyebrow">A demo on Red Hat OpenShift AI</p>
         <h1>Sovereign <span class="accent">Self-Healing</span></h1>
         <p class="sub">LLM routing and AI SRE triage on OpenShift AI</p>
-        <p class="lead">When an application breaks, an AI SRE agent investigates it: metrics, logs, a diagnosis and an incident ticket. Every LLM call of the agent passes a <b>sovereign router</b>. Sensitive data stays on a GPU in the cluster. Only clean and complex work goes to an external model.</p>
+        <p class="lead">When an application breaks, an AI SRE agent investigates it: metrics, logs, a diagnosis and an incident ticket. Every LLM call of the agent goes through a <b>sovereign router</b>. Sensitive data stays on a GPU in the cluster. Only clean and complex work goes to an external model.</p>
         <div class="cta">
           <a class="btn primary" href="#routing">See the router decide</a>
           <a class="btn" href="install.html">Install it on your cluster</a>
         </div>
       </div>
-      <svg class="hero-art" viewBox="0 0 480 300" role="img" aria-label="Requests from the agents pass the router: most stay on the local GPU, a few go to the external model">
+      <svg class="hero-art" viewBox="0 0 480 300" role="img" aria-label="Requests from the agents go through the router: most stay on the local GPU, a few go to the external model">
         <defs>
           <linearGradient id="hg" x1="0" x2="1"><stop offset="0" stop-color="#ee0000" stop-opacity="0.15"/><stop offset="1" stop-color="#ee0000" stop-opacity="0.45"/></linearGradient>
         </defs>
@@ -111,7 +111,7 @@
     <div class="wrap">
       <p class="eyebrow">Dynamic routing</p>
       <h2>Watch the router decide</h2>
-      <p class="intro">Each example is a real request of the demo, with the real decision line of the router. The first gate that says LOCAL decides, and the gates after it do not run. Pick an example, or let them play.</p>
+      <p class="intro">Each example is a real request of the demo, with the real decision line of the router. The first gate that says LOCAL decides, and the gates after it do not run. Pick an example, or let the page show them one after the other.</p>
       <div class="sim" id="sim">
         <div class="chips" role="group" aria-label="Example requests"></div>
         <div class="stage" aria-describedby="sim-meta"></div>
@@ -131,13 +131,13 @@
         <div class="card">
           <h3 style="margin-top:0">The four gates</h3>
           <p><span class="tag restricted">1 NAMESPACE</span> A request about a namespace labelled <code>restricted</code> stays local. No other gate runs.</p>
-          <p><span class="tag local">2 EFFICIENCY</span> Short requests, requests over the SOTA size cap and requests of a team that used its SOTA token budget stay local.</p>
+          <p><span class="tag local">2 EFFICIENCY</span> Short requests, requests over the SOTA size cap and requests from a team that has used up its SOTA token budget stay local.</p>
           <p><span class="tag local">3 PRIVACY</span> Rules (IBAN, cards, tax codes), lexicons, Presidio and a small decision model look for sensitive data. If a detector fails, the request stays local.</p>
           <p><span class="tag local">4 TIERING</span> Some teams may use only the local model, for example the legal team.</p>
         </div>
         <div class="card">
           <h3 style="margin-top:0">Why it matters</h3>
-          <p>The agents send large contexts: tool output, logs, metrics. A request can carry customer data without anyone noticing. The router checks the whole request, the system prompt and the tool output included, before a single byte goes out.</p>
+          <p>The agents send large contexts: tool output, logs, metrics. A request can carry customer data without anyone noticing. The router checks the whole request, including the system prompt and the tool output, before any data goes out.</p>
           <p>Every decision is logged and traced, so you can always answer the question: <i>which data left the cluster, and why?</i></p>
         </div>
       </div>
@@ -167,7 +167,7 @@
             <p class="panel-title">What happens</p>
             <p>The alert reaches the <b>ogx-alert-translator</b>, which calls the agent of the alert's namespace. The agent works in turns: the model asks for tools, the tools answer, and the model asks again.</p>
             <p>The agent uses three MCP servers, all in the cluster: <b>Prometheus</b> for metrics, <b>OpenShift</b> for pods and logs (read-only), and the <b>ticketing system</b>. At the end it opens an incident with its diagnosis.</p>
-            <p>Each LLM turn is a request to the router, like any other client: same gates, same logs, same traces.</p>
+            <p>Each LLM turn is a normal request to the router, like the requests of any other client: same gates, same logs, same traces.</p>
           </div>
         </div>
       </div>
@@ -193,7 +193,7 @@
     <div class="wrap">
       <p class="eyebrow">Architecture</p>
       <h2>What runs where</h2>
-      <p class="intro">Everything runs on one OpenShift cluster on AWS, with two GPU nodes. Only the external SOTA model is outside. Hover or focus a component to read what it does.</p>
+      <p class="intro">Everything runs on one OpenShift cluster on AWS, with two GPU nodes. Only the external SOTA model is outside. Hover over a component, or reach it with the Tab key, to read what it does.</p>
       <div class="map" id="map">
         <div class="map-grid">
           <div class="card" id="map-svg"></div>
@@ -221,7 +221,7 @@
   <section id="mlflow">
     <div class="wrap">
       <p class="eyebrow">MLflow <span class="tag preview">PREVIEW</span></p>
-      <h2>A flight recorder for the agent</h2>
+      <h2>A record of every investigation</h2>
       <p class="intro">Red Hat MLflow, part of OpenShift AI, can record every investigation of the agent: each LLM turn, each tool call, the tokens and the time. A local judge model can score the diagnosis. This part was tested in a spike and is not in the default install yet: read <a href="https://github.com/sovereign-selfheal/gitops/blob/main/docs/mlflow/README.md">the results of the spike</a>.</p>
       <div class="gallery">
         <figure>

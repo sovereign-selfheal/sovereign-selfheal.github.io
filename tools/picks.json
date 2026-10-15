@@ -4,7 +4,7 @@
   "scenarios": [
     {"id": "restricted-alert", "label": "Alert in a restricted namespace", "trace": "10c140523f1881ef9f125c7e8d6dba7d",
      "who": "the payments agent",
-     "summary": "The triage agent of the namespace payments investigates an alert. Its request reads metrics and logs of payments, a namespace labelled restricted."},
+     "summary": "The triage agent of the namespace payments investigates an alert. Its request carries metrics and logs of payments, a namespace labelled restricted."},
     {"id": "short", "label": "Short question", "trace": "11dd3b4f5d2f7cd9835e4ea51edfcb33", "case": "R1"},
     {"id": "too-big", "label": "Too large for the SOTA model", "trace": "a842e7e018d845cbe5c5e7b8db0b4a97", "case": "K10",
      "who": "an agent",
