@@ -150,7 +150,7 @@
     for (const l of logLines(sc)) {
       pre.append(S.el("span", { class: `ln ${l.cls}${lit === true || l.cls === "head" ? " on" : ""}`, "data-gate": l.gate || "", text: l.text }));
     }
-    logBox.replaceChildren(S.el("p", { class: "panel-title", text: "Decision of the router (real log)" }), pre);
+    logBox.replaceChildren(S.el("p", { class: "panel-title", text: "Decision of the router (reasons from its log)" }), pre);
     if (L) L.reqSub.textContent = r.team.length > 22 ? r.team.slice(0, 21) + "…" : r.team;
   }
 

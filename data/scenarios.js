@@ -9,12 +9,12 @@ window.DEMO.scenarios = {
   {
    "id": "namespace",
    "title": "Namespace",
-   "question": "Does it touch a restricted namespace?"
+   "question": "Is it about a restricted namespace?"
   },
   {
    "id": "efficiency",
    "title": "Efficiency",
-   "question": "Is the external model worth it?"
+   "question": "Does it need the external model?"
   },
   {
    "id": "privacy",
@@ -44,7 +44,7 @@ window.DEMO.scenarios = {
    "request": {
     "who": "the payments agent",
     "team": "agents-payments",
-    "summary": "The triage agent of the namespace payments investigates an alert. Its request carries metrics and logs of payments, a namespace labelled restricted.",
+    "summary": "The triage agent of the payments namespace investigates an alert. Its request carries the alert, a pod list and metrics of payments, a namespace labelled restricted.",
     "prompt_chars": 32681
    },
    "routed_to": "local-fast",
@@ -66,7 +66,7 @@ window.DEMO.scenarios = {
    "id": "short",
    "label": "Short question",
    "request": {
-    "who": "the research team",
+    "who": "the validation suite, with the research key",
     "team": "research",
     "text": "What is the capital of France?",
     "case": "R1",
@@ -96,9 +96,9 @@ window.DEMO.scenarios = {
    "id": "too-big",
    "label": "Too large for the SOTA model",
    "request": {
-    "who": "an agent",
+    "who": "the validation suite, with the research key",
     "team": "research",
-    "summary": "An agent context of 157,466 characters: tool output, logs and metrics, just over the SOTA size cap.",
+    "summary": "A test request shaped like an agent turn: 157,466 characters of system prompt, an incident and log output from a tool, just over the SOTA size cap.",
     "case": "K10",
     "prompt_chars": 157466
    },
@@ -126,7 +126,7 @@ window.DEMO.scenarios = {
    "id": "budget",
    "label": "SOTA budget used",
    "request": {
-    "who": "the validation team",
+    "who": "the validation suite, with the validation key",
     "team": "validation",
     "text": "Analyze the trade-offs between event sourcing and a classic CRUD model for an order management system. Explain why each one fits or not, with a short example.",
     "case": "B2",
@@ -156,7 +156,7 @@ window.DEMO.scenarios = {
    "id": "personal-data",
    "label": "Personal data",
    "request": {
-    "who": "the research team",
+    "who": "the validation suite, with the research key",
     "team": "research",
     "text": "Analizza questo profilo: Mario Rossi, codice fiscale RSSMRA80A01H501U, IBAN IT60X0542811101000000123456, telefono 347 1234567. Spiega perché il rischio di credito è alto.",
     "case": "R4",
@@ -191,7 +191,7 @@ window.DEMO.scenarios = {
    "id": "implicit",
    "label": "A person, without keywords",
    "request": {
-    "who": "the research team",
+    "who": "the validation suite, with the research key",
     "team": "research",
     "text": "Analyze the career options of Mario Rossi, an Italian engineer who lives in Milan.",
     "case": "D7",
@@ -226,7 +226,7 @@ window.DEMO.scenarios = {
    "id": "team-legal",
    "label": "Team legal",
    "request": {
-    "who": "the legal team",
+    "who": "the validation suite, with the legal key",
     "team": "legal",
     "text": "Compare in detail, step by step, the main approaches to database sharding and their trade-offs.",
     "case": "A3",
@@ -264,9 +264,9 @@ window.DEMO.scenarios = {
   },
   {
    "id": "clean",
-   "label": "Long, clean and complex",
+   "label": "Clean and complex",
    "request": {
-    "who": "the research team",
+    "who": "the validation suite, with the research key",
     "team": "research",
     "text": "Analyze the trade-offs between event sourcing and a classic CRUD model for an order management system. Explain why each one fits or not, with a short example.",
     "case": "N5",

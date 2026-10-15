@@ -124,7 +124,7 @@
 
   btn.addEventListener("click", play);
   const inc = D.incident;
-  S.$("#replay-title").textContent = `Namespace ${D.namespace} (${D.data_class}): from the alert to incident ${inc.number} in ${Math.round(events.find((e) => e.kind === "incident").offset_s)} seconds`;
+  S.$("#replay-title").textContent = `Namespace ${D.namespace} (${D.data_class}): from the alert webhook to incident ${inc.number} in ${Math.round(events.find((e) => e.kind === "incident").offset_s)} seconds`;
   S.$("#replay-meta").textContent = `Captured on ${D.captured_at} from a demo cluster. ${D.notes.join(" ")} Speed ×${SPEED}.`;
   render(S.reducedMotion() ? end : 0);
   S.onVisible(root, (v) => { if (v && !played) play(); });

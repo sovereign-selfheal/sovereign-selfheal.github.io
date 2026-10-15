@@ -89,7 +89,7 @@
       <div class="stats">
         <div class="stat accent"><b>4 gates</b><span>run before any call leaves the cluster</span></div>
         <div class="stat local"><b>44 s</b><span>from the alert webhook to the incident, in a real run</span></div>
-        <div class="stat sota"><b>85 checks</b><span>validate every new install of the demo</span></div>
+        <div class="stat sota"><b>80+ checks</b><span>test a live install of the demo</span></div>
       </div>
     </div>
   </div>
@@ -97,12 +97,12 @@
   <section id="story" class="story">
     <div class="wrap">
       <p class="eyebrow">How it works</p>
-      <h2>Agents fix the platform. The router protects the data.</h2>
+      <h2>Agents investigate. The router protects the data.</h2>
       <p class="intro">AI agents are useful for operations, but they read everything: logs, metrics, tickets, customer data. This demo shows how to use them without sending that data to an external model by default.</p>
       <div class="cols-3">
-        <div class="card"><span class="num">01</span><h3>Something breaks</h3><p>A demo application runs in three namespaces. It returns errors and slow answers. Prometheus sees it, and Alertmanager fires an alert for the namespace.</p></div>
+        <div class="card"><span class="num">01</span><h3>Something breaks</h3><p>A demo application runs in three namespaces. It returns errors and some slow answers. Prometheus sees the errors, and Alertmanager fires an alert for the namespace.</p></div>
         <div class="card"><span class="num">02</span><h3>An agent investigates</h3><p>The AI SRE agent of that namespace gets the alert. With MCP tools it reads metrics, pod lists and logs. It writes a diagnosis and opens an incident.</p></div>
-        <div class="card"><span class="num">03</span><h3>The router decides</h3><p>Every LLM call goes through one endpoint. Four gates decide: the local model on the cluster GPU, or the external SOTA model. Restricted namespaces and sensitive data never go out.</p></div>
+        <div class="card"><span class="num">03</span><h3>The router decides</h3><p>Every LLM call goes through one endpoint. Four gates decide: the local model on the cluster GPU, or the external SOTA model. Requests about restricted namespaces, and requests with sensitive data, stay on the local model.</p></div>
       </div>
     </div>
   </section>
@@ -111,7 +111,7 @@
     <div class="wrap">
       <p class="eyebrow">Dynamic routing</p>
       <h2>Watch the router decide</h2>
-      <p class="intro">Each example is a real request of the demo, with the real decision line of the router. The first gate that says LOCAL decides, and the gates after it do not run. Pick an example, or let the page show them one after the other.</p>
+      <p class="intro">Each example is a real request of the demo, with the real reasons from the router's log. The first gate that says LOCAL decides, and the gates after it do not run. Pick an example, or let the page show them one after the other.</p>
       <div class="sim" id="sim">
         <div class="chips" role="group" aria-label="Example requests"></div>
         <div class="stage" aria-describedby="sim-meta"></div>
@@ -130,9 +130,9 @@
       <div class="cols-2" style="margin-top:24px">
         <div class="card">
           <h3 style="margin-top:0">The four gates</h3>
-          <p><span class="tag restricted">1 NAMESPACE</span> A request about a namespace labelled <code>restricted</code> stays local. No other gate runs.</p>
-          <p><span class="tag local">2 EFFICIENCY</span> Short requests, requests over the SOTA size cap and requests from a team that has used up its SOTA token budget stay local.</p>
-          <p><span class="tag local">3 PRIVACY</span> Rules (IBAN, cards, tax codes), lexicons, Presidio and a small decision model look for sensitive data. If a detector fails, the request stays local.</p>
+          <p><span class="tag restricted">1 NAMESPACE</span> A request that names a namespace labelled <code>restricted</code> stays local. No other gate runs.</p>
+          <p><span class="tag local">2 EFFICIENCY</span> Short and simple requests (without a keyword such as <i>analyze</i> or <i>compare</i>), requests over the SOTA size cap, and requests from a team that has used up its SOTA token budget stay local.</p>
+          <p><span class="tag local">3 PRIVACY</span> Rules (IBAN, cards, tax codes), lexicons and a decision model look for sensitive data. If a detector fails, the request stays local.</p>
           <p><span class="tag local">4 TIERING</span> Some teams may use only the local model, for example the legal team.</p>
         </div>
         <div class="card">
@@ -148,7 +148,7 @@
     <div class="wrap">
       <p class="eyebrow">AI SRE agents</p>
       <h2>From the alert to the incident</h2>
-      <p class="intro">A real investigation, replayed from the logs and traces of the demo cluster. The namespace <code>payments</code> is restricted, so every LLM turn of its agent stayed on the local GPU.</p>
+      <p class="intro">A real investigation, replayed from the logs and traces of the demo cluster. The <code>payments</code> namespace is restricted, so every LLM turn of its agent stayed on the local GPU.</p>
       <div class="card" id="replay">
         <div class="replay-head">
           <div>
@@ -165,7 +165,7 @@
           <ol class="events" id="replay-events" aria-label="Events of the investigation"></ol>
           <div>
             <p class="panel-title">What happens</p>
-            <p>The alert reaches the <b>ogx-alert-translator</b>, which calls the agent of the alert's namespace. The agent works in turns: the model asks for tools, the tools answer, and the model asks again.</p>
+            <p>The alert reaches the <b>ogx-alert-translator</b>, which calls the agent of the alert's namespace. The agent works in turns: the model asks for a tool call, the tool answers, and the model decides the next step.</p>
             <p>The agent uses three MCP servers, all in the cluster: <b>Prometheus</b> for metrics, <b>OpenShift</b> for pods and logs (read-only), and the <b>ticketing system</b>. At the end it opens an incident with its diagnosis.</p>
             <p>Each LLM turn is a normal request to the router, like the requests of any other client: same gates, same logs, same traces.</p>
           </div>
@@ -179,7 +179,7 @@
     <div class="wrap">
       <p class="eyebrow">Traces</p>
       <h2>Every decision is a trace</h2>
-      <p class="intro">The router sends OpenTelemetry traces to Tempo in the cluster. The gates are child spans of <code>router.chain</code>, with their verdict and reason. Click a span to read its attributes.</p>
+      <p class="intro">The router sends OpenTelemetry traces to Tempo in the cluster. The namespace, efficiency and privacy gates are child spans of <code>router.chain</code>, with their verdict and reason. Click a span to read its attributes.</p>
       <div class="card" id="waterfall">
         <div class="tabs" role="group" aria-label="Traces"></div>
         <div style="overflow-x:auto"><table class="wf" id="wf-table"></table></div>
@@ -222,7 +222,7 @@
     <div class="wrap">
       <p class="eyebrow">MLflow <span class="tag preview">PREVIEW</span></p>
       <h2>A record of every investigation</h2>
-      <p class="intro">Red Hat MLflow, part of OpenShift AI, can record every investigation of the agent: each LLM turn, each tool call, the tokens and the time. A local judge model can score the diagnosis. This part was tested in a spike and is not in the default install yet: read <a href="https://github.com/sovereign-selfheal/gitops/blob/main/docs/mlflow/README.md">the results of the spike</a>.</p>
+      <p class="intro">Red Hat MLflow, part of OpenShift AI, can record every investigation of the agent: each LLM turn, each tool call, the tokens and the time. A local judge model can score the diagnosis. This part was tested in a short experiment and is not in the default install yet: read <a href="https://github.com/sovereign-selfheal/gitops/blob/main/docs/mlflow/README.md">the results</a>.</p>
       <div class="gallery">
         <figure>
           <img src="img/mlflow/14-trace-timeline-full.png" alt="MLflow trace of one investigation: seven LLM turns and the MCP tool calls between them, on a timeline of 48 seconds" width="1853" height="859" loading="lazy">
@@ -269,7 +269,7 @@ scripts/run-playbook.sh playbooks/site.yml</pre>
         <a class="repo" href="https://github.com/sovereign-selfheal/router"><b>router</b><span>LiteLLM with the policy hook: the four gates.</span></a>
         <a class="repo" href="https://github.com/sovereign-selfheal/presidio"><b>presidio</b><span>Presidio image with English and Italian models.</span></a>
         <a class="repo" href="https://github.com/sovereign-selfheal/modelcar"><b>modelcar</b><span>The local models as OCI images (modelcars).</span></a>
-        <a class="repo" href="https://github.com/sovereign-selfheal/validation"><b>validation</b><span>85 checks of a live install.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/validation"><b>validation</b><span>More than 80 checks of a live install.</span></a>
         <a class="repo" href="https://github.com/sovereign-selfheal/triage-agent"><b>triage-agent</b><span>The AI SRE agent and its UI.</span></a>
         <a class="repo" href="https://github.com/sovereign-selfheal/triage-agent-operator"><b>triage-agent-operator</b><span>One agent per namespace from a TriageAgent resource.</span></a>
         <a class="repo" href="https://github.com/sovereign-selfheal/ogx-alert-translator"><b>ogx-alert-translator</b><span>From an Alertmanager webhook to the right agent.</span></a>
@@ -287,11 +287,11 @@ scripts/run-playbook.sh playbooks/site.yml</pre>
   <div class="wrap cols-2">
     <div>
       <p><b>Sovereign Self-Healing</b>: LLM Routing and AI SRE Triage on OpenShift AI. A community demo, not a Red Hat product.</p>
-      <p>Red Hat, OpenShift and the Red Hat OpenShift AI product names are trademarks of Red Hat, Inc. Other names are trademarks of their owners. Code under the Apache License 2.0.</p>
+      <p>Red Hat, OpenShift and the names of the Red Hat products are trademarks of Red Hat, Inc. in the United States and other countries. Other names are trademarks of their owners. Code under the Apache License 2.0.</p>
     </div>
     <div>
       <p><span class="live-dot" aria-hidden="true"></span><b>This page loads nothing from other sites.</b> No fonts, scripts or analytics from third parties: open the network tab of your browser and check. A Content Security Policy enforces it.</p>
-      <p>The data of the widgets comes from a demo cluster, cleaned by <a href="https://github.com/sovereign-selfheal/sovereign-selfheal.github.io/tree/main/tools">these scripts</a>.</p>
+      <p>The widgets show data from a demo cluster, cleaned by <a href="https://github.com/sovereign-selfheal/sovereign-selfheal.github.io/tree/main/tools">these scripts</a>.</p>
     </div>
   </div>
 </footer>

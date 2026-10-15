@@ -16,7 +16,7 @@
     router: "LiteLLM picks a deployment of the chosen model alias.",
     litellm_request: "The call to the chosen model. Prompt and answer were removed from this copy.",
     raw_gen_ai_request: "The raw call to the model server.",
-    self: "Time spent in the HTTP call to the model.",
+    self: "Time of the HTTP call to the model server (for a streamed answer, until the stream starts).",
   };
 
   const tabs = S.$(".tabs", root);

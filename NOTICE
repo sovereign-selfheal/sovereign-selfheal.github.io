@@ -5,8 +5,8 @@ This is a community demo, not a Red Hat product. Red Hat, OpenShift and the name
 Red Hat products are trademarks of Red Hat, Inc. in the United States and other countries.
 Other names are trademarks of their respective owners.
 
-The screenshots in img/ show the user interfaces of Red Hat OpenShift, Red Hat OpenShift AI
-and Perses, taken on a demo cluster.
+The screenshots in img/ show the user interfaces of Red Hat OpenShift, Red Hat OpenShift AI,
+Perses and MLflow, taken on a demo cluster.
 
 The fonts in fonts/ are Red Hat Display, Red Hat Text and Red Hat Mono, version 5.0.0,
 Copyright 2021 The Red Hat Project Authors (https://github.com/RedHatOfficial/RedHatFont),
