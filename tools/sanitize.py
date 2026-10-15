@@ -13,10 +13,13 @@ import argparse
 import ast
 import json
 import re
+import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
+
+from leaks import leaks
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -60,15 +63,13 @@ SPAN_ATTRS = {
     "presidio.analyze": ["presidio.language", "presidio.entities_found"],
 }
 
-# Text that must never reach the site. check_site.py runs the same kind of check on the result.
-LEAK = re.compile(
-    r"opentlc|sandbox\d+|hxppg|sha256~|Bearer |\bsk-[A-Za-z0-9]{8,}|\b10\.\d+\.\d+\.\d+\b|"
-    r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[a-z]{2,}"
-)
 
 
 def attr_value(v: dict):
-    for key in ("stringValue", "intValue", "doubleValue", "boolValue"):
+    """The value of an OTLP attribute. OTLP JSON encodes int64 values as strings."""
+    if "intValue" in v:
+        return int(v["intValue"])
+    for key in ("stringValue", "doubleValue", "boolValue"):
         if key in v:
             return v[key]
     return None
@@ -202,22 +203,50 @@ def build_scenarios(raw: Path, picks: dict, prompts: dict[str, dict]) -> dict:
     return {"gates": GATES, "destinations": DESTINATIONS, "scenarios": scenarios}
 
 
+def tree_order(spans: list[dict], keep: list[dict]) -> list[tuple[dict, str]]:
+    """The kept spans in tree order (each parent, then its children by start time), with their kept parent.
+
+    A child with the same start and end as its parent must not come before it, so a flat sort by time
+    is not enough. A span whose parent was dropped hangs from its nearest kept ancestor.
+    """
+    ids = {s["id"] for s in spans}
+    kept_ids = {s["id"] for s in keep}
+    parent_of = {s["id"]: s["parent"] for s in spans}
+
+    def kept_parent(s: dict) -> str:
+        parent = s["parent"]
+        while parent and parent not in kept_ids and parent in ids:
+            parent = parent_of[parent]
+        return parent if parent in kept_ids else ""
+
+    children: dict[str, list[dict]] = {}
+    for s in keep:
+        children.setdefault(kept_parent(s), []).append(s)
+    ordered: list[tuple[dict, str]] = []
+    stack = [("", sorted(children.get("", []), key=lambda s: (s["start"], -s["end"], s["name"])))]
+    while stack:
+        parent_id, todo = stack[-1]
+        if not todo:
+            stack.pop()
+            continue
+        s = todo.pop(0)
+        ordered.append((s, parent_id))
+        stack.append((s["id"], sorted(children.get(s["id"], []), key=lambda c: (c["start"], -c["end"], c["name"]))))
+    return ordered
+
+
 def build_traces(raw: Path, picks: dict) -> dict:
     traces = []
     for p in picks["waterfall"]:
         spans = load_trace(raw / "raw/traces" / f"{p['trace']}.json")
-        ids = {s["id"] for s in spans}
         keep = [s for s in spans if s["name"] in SPAN_ATTRS or s["name"].startswith("gate.")]
         kept_ids = {s["id"] for s in keep}
         t0 = min(s["start"] for s in keep)
         t1 = max(s["end"] for s in keep)
         short = {sid: f"s{i}" for i, sid in enumerate(sorted(kept_ids))}
+        ordered = tree_order(spans, keep)
         out = []
-        for s in sorted(keep, key=lambda s: (s["start"], -s["end"])):
-            parent = s["parent"]
-            # A span whose parent was dropped hangs from the root.
-            while parent and parent not in kept_ids and parent in ids:
-                parent = next(x["parent"] for x in spans if x["id"] == parent)
+        for s, parent in ordered:
             out.append(
                 {
                     "id": short[s["id"]],
@@ -315,9 +344,12 @@ def build_investigation(raw: Path, picks: dict) -> dict:
     # opened_at has whole seconds: the incident exists when the create_incident call that made it ends.
     made = [t1 for (_, tool), items in calls.items() if tool == "create_incident" for _, t1 in items
             if t1 and abs(t1 - opened) < 2]
+    # Only the number and the priority: the text of the incident was written by the agent's model.
     add(made[0] if made else opened, "ticket", "incident", f"Incident {inc['number']} opened",
-        detail=f"priority {inc['priority']}: {inc['short_description']}")
+        detail=f"priority {inc['priority']}")
 
+    if not any(e["lane"] == "alert" for e in events):
+        raise SystemExit(f"{inv['translator_log']}: no webhook or trigger of {ns}; capture it with oc logs --timestamps")
     order = {"webhook": 0, "trigger": 1, "run_start": 2}
     events.sort(key=lambda e: (round(e["t"], 1), order.get(e["kind"], 5), e["t"]))
     t0 = events[0]["t"]
@@ -334,7 +366,6 @@ def build_investigation(raw: Path, picks: dict) -> dict:
         "incident": {
             "number": inc["number"],
             "priority": inc["priority"],
-            "short_description": inc["short_description"],
             "opened_at": inc["opened_at"].replace(" ", "T") + "Z",
         },
         "events": events,
@@ -344,17 +375,29 @@ def build_investigation(raw: Path, picks: dict) -> dict:
                 "not the alert."
             ),
             "Times come from the translator and agent logs, the router traces (Tempo) and the incident.",
-            "Prompts, answers and the incident text were removed; only the short description is kept.",
+            "Prompts, model answers and the text of the incident were removed; only its number and priority are kept.",
         ],
     }
+
+
+def router_version(raw: Path, gitops: Path | None, picks: dict) -> str:
+    """routerVersion of gitops at the revision the cluster ran (raw/meta.json of capture.py), else picks."""
+    meta_file = raw / "raw/meta.json"
+    if gitops and meta_file.exists():
+        rev = json.loads(meta_file.read_text()).get("gitops_revision")
+        if rev:
+            values = subprocess.run(["git", "-C", str(gitops), "show", f"{rev}:components/litellm-router/values.yaml"],
+                                    check=True, capture_output=True, text=True).stdout
+            return yaml.safe_load(values)["routerVersion"]
+    return picks["router_version"]
 
 
 def write_js(path: Path, name: str, meta: dict, value: dict) -> None:
     body = {"schema": 1, **meta, **value}
     text = json.dumps(body, indent=1, ensure_ascii=False)
-    leak = LEAK.search(text)
-    if leak:
-        raise SystemExit(f"{path.name}: possible leak {leak.group(0)!r}; fix the allowlist first")
+    found = leaks(text)
+    if found:
+        raise SystemExit(f"{path.name}: possible leak {found[0]!r}; fix the allowlist first")
     path.write_text(
         "// Generated by tools/sanitize.py. Do not edit by hand.\n"
         f"window.DEMO = window.DEMO || {{}};\nwindow.DEMO.{name} = {text};\n"
@@ -366,11 +409,13 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--raw", type=Path, required=True, help="capture directory (with raw/)")
     ap.add_argument("--validation", type=Path, required=True, help="checkout of the validation repo")
+    ap.add_argument("--gitops", type=Path, help="checkout of the gitops repo: router version of the capture")
     ap.add_argument("--picks", type=Path, default=ROOT / "tools/picks.json")
     ap.add_argument("--out", type=Path, default=ROOT / "data")
     args = ap.parse_args()
     picks = json.loads(args.picks.read_text())
-    meta = {"captured_at": picks["captured_at"], "router_version": picks["router_version"], "cluster": "redacted"}
+    meta = {"captured_at": picks["captured_at"], "router_version": router_version(args.raw, args.gitops, picks),
+            "cluster": "redacted"}
     prompts = validation_prompts(args.validation)
     write_js(args.out / "scenarios.js", "scenarios", meta, build_scenarios(args.raw, picks, prompts))
     write_js(args.out / "traces.js", "traces", meta, build_traces(args.raw, picks))

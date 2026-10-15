@@ -74,7 +74,7 @@
     let seen = false;
     const report = () => cb(seen && !document.hidden);
     if ("IntersectionObserver" in window) {
-      new IntersectionObserver((entries) => { seen = entries[0].isIntersecting; report(); }, { threshold: 0.2 }).observe(node);
+      new IntersectionObserver((entries) => { seen = entries[entries.length - 1].isIntersecting; report(); }, { threshold: 0.2 }).observe(node);
     } else { seen = true; }
     document.addEventListener("visibilitychange", report);
     report();

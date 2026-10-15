@@ -3,7 +3,7 @@ window.DEMO = window.DEMO || {};
 window.DEMO.traces = {
  "schema": 1,
  "captured_at": "2026-10-15",
- "router_version": "v0.12.0",
+ "router_version": "v0.12.1",
  "cluster": "redacted",
  "traces": [
   {
@@ -22,7 +22,7 @@ window.DEMO.traces = {
      "dur_ms": 2194.59,
      "attrs": {
       "http.route": "/v1/chat/completions",
-      "http.response.status_code": "200"
+      "http.response.status_code": 200
      }
     },
     {
@@ -127,17 +127,6 @@ window.DEMO.traces = {
      }
     },
     {
-     "id": "s6",
-     "parent": "s10",
-     "name": "raw_gen_ai_request",
-     "service": "litellm-router",
-     "start_ms": 630.59,
-     "dur_ms": 1564.01,
-     "attrs": {
-      "llm.openai.model": "gemini-2.5-pro"
-     }
-    },
-    {
      "id": "s10",
      "parent": "s0",
      "name": "litellm_request",
@@ -147,9 +136,20 @@ window.DEMO.traces = {
      "attrs": {
       "litellm.model_group": "sota-smart",
       "gen_ai.request.model": "gemini-2.5-pro",
-      "gen_ai.usage.input_tokens": "32",
-      "gen_ai.usage.output_tokens": "56",
+      "gen_ai.usage.input_tokens": 32,
+      "gen_ai.usage.output_tokens": 56,
       "llm.is_streaming": "False"
+     }
+    },
+    {
+     "id": "s6",
+     "parent": "s10",
+     "name": "raw_gen_ai_request",
+     "service": "litellm-router",
+     "start_ms": 630.59,
+     "dur_ms": 1564.01,
+     "attrs": {
+      "llm.openai.model": "gemini-2.5-pro"
      }
     },
     {
@@ -181,7 +181,7 @@ window.DEMO.traces = {
      "dur_ms": 1615.65,
      "attrs": {
       "http.route": "/v1/chat/completions",
-      "http.response.status_code": "200"
+      "http.response.status_code": 200
      }
     },
     {
@@ -282,8 +282,8 @@ window.DEMO.traces = {
      "attrs": {
       "litellm.model_group": "local-fast",
       "gen_ai.request.model": "qwen38-local",
-      "gen_ai.usage.input_tokens": "129",
-      "gen_ai.usage.output_tokens": "150",
+      "gen_ai.usage.input_tokens": 129,
+      "gen_ai.usage.output_tokens": 150,
       "llm.is_streaming": "False"
      }
     },
@@ -327,7 +327,7 @@ window.DEMO.traces = {
      "dur_ms": 4333.88,
      "attrs": {
       "http.route": "/v1/chat/completions",
-      "http.response.status_code": "200"
+      "http.response.status_code": 200
      }
     },
     {
@@ -340,8 +340,8 @@ window.DEMO.traces = {
      "attrs": {
       "litellm.model_group": "local-fast",
       "gen_ai.request.model": "qwen38-local",
-      "gen_ai.usage.input_tokens": "9105",
-      "gen_ai.usage.output_tokens": "434",
+      "gen_ai.usage.input_tokens": 9105,
+      "gen_ai.usage.output_tokens": 434,
       "llm.is_streaming": "True"
      }
     },

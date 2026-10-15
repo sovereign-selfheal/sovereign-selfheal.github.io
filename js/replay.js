@@ -22,6 +22,7 @@
   const lanesBox = S.$("#replay-lanes", root);
   const run = S.runner();
   let played = false;
+  let shown = -1;
 
   // ---- lanes (SVG) ----------------------------------------------------------------------
   const W = 960, LEFT = 168, RIGHT = 944, TOP = 26, LH = 44;
@@ -66,7 +67,9 @@
     let detail = e.detail || "";
     if (e.lane === "llm") {
       const where = e.routed_to === "sota-smart" ? "external SOTA model" : "local GPU model";
-      detail = `${where}, decided by the ${e.decided_by} gate · ${S.fmtSecs(e.dur_s)} · ${e.tokens_in.toLocaleString("en-US")} tokens in, ${e.tokens_out.toLocaleString("en-US")} out`;
+      const tokens = Number.isFinite(e.tokens_in) && Number.isFinite(e.tokens_out)
+        ? ` · ${e.tokens_in.toLocaleString("en-US")} tokens in, ${e.tokens_out.toLocaleString("en-US")} out` : "";
+      detail = `${where}, decided by the ${e.decided_by} gate · ${S.fmtSecs(e.dur_s)}${tokens}`;
     } else if (e.lane === "tools") {
       detail = `${e.detail} · ${Math.round(e.dur_s * 1000)} ms`;
     }
@@ -92,6 +95,16 @@
       else m.setAttribute("opacity", on ? 1 : 0);
     });
     items.forEach((li, i) => li.classList.toggle("now", i === last));
+    if (last !== shown) { shown = last; keepInView(items[last]); }
+  }
+
+  // Scroll the event list (not the page) so that the current event stays visible.
+  function keepInView(li) {
+    if (!li) return;
+    const top = li.offsetTop, bottom = top + li.offsetHeight;
+    if (top < list.scrollTop || bottom > list.scrollTop + list.clientHeight) {
+      list.scrollTo({ top: Math.max(0, bottom - list.clientHeight + 8), behavior: S.reducedMotion() ? "auto" : "smooth" });
+    }
   }
 
   function play() {

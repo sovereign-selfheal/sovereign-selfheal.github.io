@@ -85,6 +85,6 @@
     for (const c of D.components.filter((k) => k.zone === z.id)) {
       ul.append(S.el("li", {}, [S.el("b", { text: c.name }), ` (${c.sub}): ${c.summary} `, repoLink(c)]));
     }
-    listBox.append(S.el("h3", { text: z.label.charAt(0) + z.label.slice(1).toLowerCase() }), ul);
+    listBox.append(S.el("h3", { text: z.title || z.label }), ul);
   }
 })();

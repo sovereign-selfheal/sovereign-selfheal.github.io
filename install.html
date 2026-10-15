@@ -75,7 +75,7 @@ ansible-vault edit group_vars/all/vault.yml
 
 # the password file that scripts/run-playbook.sh reads
 mkdir -p ~/.config/sovereign-selfheal
-( umask 077; read -rs -p 'Vault password: ' p &amp;&amp; printf '%s\n' "$p" &gt; ~/.config/sovereign-selfheal/vault-pass )</pre>
+bash -c 'umask 077; read -rs -p "Vault password: " p &amp;&amp; printf "%s\n" "$p" &gt; ~/.config/sovereign-selfheal/vault-pass'</pre>
       </li>
       <li>
         <b>Log in to the cluster</b>
@@ -102,13 +102,15 @@ uv run ansible-playbook playbooks/validate.yml -e validation_disruptive=true   #
       </li>
       <li>
         <b>Use the demo</b>
-        <p>In the OpenShift console, open <i>Observe → Dashboards</i> in the project <code>maas-routing</code>, and <i>Observe → Traces</i>. The menu of the console has links to the router traces. To call the router yourself, take the API key of a tier and send a request to the model <code>auto</code>:</p>
+        <p>In the OpenShift console, open <i>Observe → Dashboards</i> in the project <code>maas-routing</code>, and <i>Observe → Traces</i>. The menu of the console has links to the router traces. To call the router yourself, take the API key of a tier and send a request to the model <code>auto</code>. A trace id in the request finds its decision among the logs of the two router replicas:</p>
 <pre>KEY=$(oc get secret apikey-research-1 -n maas-routing -o jsonpath='{.data.api_key}' | base64 -d)
 DOMAIN=$(oc get ingresses.config/cluster -o jsonpath='{.spec.domain}')
+TRACE=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
 curl -s https://router.$DOMAIN/v1/chat/completions \
   -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' \
+  -H "traceparent: 00-$TRACE-$(od -An -N8 -tx1 /dev/urandom | tr -d ' \n')-01" \
   -d '{"model": "auto", "messages": [{"role": "user", "content": "What is the capital of France?"}]}'
-oc logs -n maas-routing deploy/litellm -c litellm | grep policy-router | tail -1   # the decision</pre>
+oc logs -n maas-routing -l app=litellm -c litellm --tail=-1 | grep "$TRACE"   # the decision</pre>
       </li>
     </ol>
 

@@ -3,7 +3,7 @@ window.DEMO = window.DEMO || {};
 window.DEMO.investigation = {
  "schema": 1,
  "captured_at": "2026-10-15",
- "router_version": "v0.12.0",
+ "router_version": "v0.12.1",
  "cluster": "redacted",
  "namespace": "payments",
  "data_class": "restricted",
@@ -14,7 +14,6 @@ window.DEMO.investigation = {
  "incident": {
   "number": "INC0000002",
   "priority": 3,
-  "short_description": "quarkus-buggy-app (payments): HTTP 5xx share 12.8% > 10% — NPE on /api/products, 503s on /api/inventory, /api/orders latency ~725ms",
   "opened_at": "2026-10-15T05:40:35Z"
  },
  "events": [
@@ -50,8 +49,8 @@ window.DEMO.investigation = {
    "decided_by": "namespace",
    "reason": "namespace: restricted payments (found by scan) -> LOCAL",
    "model": "qwen38-local",
-   "tokens_in": "8047",
-   "tokens_out": "258",
+   "tokens_in": 8047,
+   "tokens_out": 258,
    "trace_id": "430a0d5f0e92122b0a96abf3e51e8195",
    "offset_s": 0.522,
    "ts": "2026-10-15T05:39:52.793Z"
@@ -92,8 +91,8 @@ window.DEMO.investigation = {
    "decided_by": "namespace",
    "reason": "namespace: restricted payments (found by scan) -> LOCAL",
    "model": "qwen38-local",
-   "tokens_in": "9105",
-   "tokens_out": "434",
+   "tokens_in": 9105,
+   "tokens_out": 434,
    "trace_id": "10c140523f1881ef9f125c7e8d6dba7d",
    "offset_s": 8.126,
    "ts": "2026-10-15T05:40:00.397Z"
@@ -134,8 +133,8 @@ window.DEMO.investigation = {
    "decided_by": "namespace",
    "reason": "namespace: restricted payments (found by scan) -> LOCAL",
    "model": "qwen38-local",
-   "tokens_in": "18623",
-   "tokens_out": "1392",
+   "tokens_in": 18623,
+   "tokens_out": 1392,
    "trace_id": "f30bd918fce89601d22e7a765731f402",
    "offset_s": 12.708,
    "ts": "2026-10-15T05:40:04.979Z"
@@ -167,8 +166,8 @@ window.DEMO.investigation = {
    "decided_by": "namespace",
    "reason": "namespace: restricted payments (found by scan) -> LOCAL",
    "model": "qwen38-local",
-   "tokens_in": "19078",
-   "tokens_out": "1265",
+   "tokens_in": 19078,
+   "tokens_out": 1265,
    "trace_id": "38ef8302aee3abfeb48e0085b829dbd9",
    "offset_s": 30.271,
    "ts": "2026-10-15T05:40:22.542Z"
@@ -186,7 +185,7 @@ window.DEMO.investigation = {
    "lane": "ticket",
    "kind": "incident",
    "title": "Incident INC0000002 opened",
-   "detail": "priority 3: quarkus-buggy-app (payments): HTTP 5xx share 12.8% > 10% — NPE on /api/products, 503s on /api/inventory, /api/orders latency ~725ms",
+   "detail": "priority 3",
    "offset_s": 43.729,
    "ts": "2026-10-15T05:40:36.000Z"
   },
@@ -199,8 +198,8 @@ window.DEMO.investigation = {
    "decided_by": "namespace",
    "reason": "namespace: restricted payments (found by scan) -> LOCAL",
    "model": "qwen38-local",
-   "tokens_in": "20814",
-   "tokens_out": "634",
+   "tokens_in": 20814,
+   "tokens_out": 634,
    "trace_id": "2cd4aae52c4b93711d58f07a8b73229e",
    "offset_s": 43.782,
    "ts": "2026-10-15T05:40:36.053Z"
@@ -217,6 +216,6 @@ window.DEMO.investigation = {
  "notes": [
   "The alert was already firing when the cluster finished its install, so T0 is the webhook, not the alert.",
   "Times come from the translator and agent logs, the router traces (Tempo) and the incident.",
-  "Prompts, answers and the incident text were removed; only the short description is kept."
+  "Prompts, model answers and the text of the incident were removed; only its number and priority are kept."
  ]
 };

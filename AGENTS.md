@@ -11,7 +11,10 @@ install guide. It installs nothing and changes no cluster.
 ## 2. Rules
 
 - **Public by design.** Everything here is on the internet. Never add host names of a cluster, tokens,
-  API keys, IP addresses, e-mail addresses, user names, prompts or model answers.
+  API keys, IP addresses, e-mail addresses or user names. Never add prompts or answers of the agents, or
+  the text of an incident (it is written by the agent's model). The only prompts allowed are the ones
+  of validation cases: synthetic test data, already public in the validation repo (the scenario keeps
+  the case id). `tools/check_site.py` enforces these rules.
 - **Raw data stays outside.** `tools/capture.py` writes outside the repository; `tools/sanitize.py`
   copies only an allowlist of fields into `data/*.js`. To show a new field, add it to the allowlist in
   `sanitize.py` on purpose; never copy whole log lines or spans.
@@ -22,7 +25,9 @@ install guide. It installs nothing and changes no cluster.
   files as they are and the page works from `file://`.
 - **Accessibility.** Every widget works with the keyboard, has a static view for
   `prefers-reduced-motion`, and fits a 375 px screen without horizontal scroll.
-- **Run `tools/check_site.py` before every commit.** The CI runs it too.
+- **Run `tools/check_site.py` before every commit.** The CI runs it too. Leak patterns live in
+  `tools/leaks.py`, shared by `sanitize.py` and `check_site.py`; keep them generic (no name of a
+  single cluster).
 - Text in **English**, level B2/C1: short, clear sentences, no idioms.
 - **Python tools with uv**, never pip (`tools/pyproject.toml`, `tools/uv.lock`).
 

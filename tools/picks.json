@@ -1,6 +1,6 @@
 {
   "captured_at": "2026-10-15",
-  "router_version": "v0.12.0",
+  "router_version": "v0.12.1",
   "scenarios": [
     {"id": "restricted-alert", "label": "Alert in a restricted namespace", "trace": "10c140523f1881ef9f125c7e8d6dba7d",
      "who": "the payments agent",
@@ -25,7 +25,7 @@
     "data_class": "restricted",
     "agent_log": "triage-agent-payments-triage-agent.log",
     "translator_log": "translator.log",
-    "trace_ids": "traces/payments-0539-ids.txt",
+    "trace_ids": "traces/search-agents-payments-0539.txt",
     "incident": "INC0000002",
     "start": "2026-10-15T05:39:50Z",
     "end": "2026-10-15T05:40:45Z"

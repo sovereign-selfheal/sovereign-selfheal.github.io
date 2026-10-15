@@ -40,18 +40,23 @@ uv run --project tools python tools/capture.py --out ../site-capture \
   --trace <trace id> --search agents-payments 2026-10-15T05:39:40Z 2026-10-15T05:41:00Z \
   --prom-start 2026-10-15T05:10:00Z --prom-end 2026-10-15T07:50:00Z
 
+# the translator scales to zero: follow its logs during the alert path, with timestamps
+oc logs -f -n agentic-triage deploy/ogx-alert-translator --timestamps > ../site-capture/raw/translator.log
+
 # 2. pick the requests and the investigation: edit tools/picks.json
 
 # 3. build data/*.js; only an allowlist of fields is copied
-uv run --project tools python tools/sanitize.py --raw ../site-capture --validation ../validation
+uv run --project tools python tools/sanitize.py --raw ../site-capture --validation ../validation --gitops ../gitops
 
 # 4. check before the commit (also run by the CI)
 uv run --project tools python tools/check_site.py --strip-png
 ```
 
-`check_site.py` fails on resources from other sites, broken links and anchors, data without the
-`cluster: "redacted"` marker, cluster host names, tokens, private addresses and e-mail addresses, and
-PNG files with metadata chunks (`--strip-png` removes them).
+`check_site.py` fails on resources from other sites or missing local files, a weaker Content Security
+Policy, broken links and anchors, data without the `cluster: "redacted"` marker, text of the agents or
+of incidents in the data (only the prompts of validation cases are allowed), cluster host names,
+tokens, private addresses and e-mail addresses, and PNG files with metadata chunks (`--strip-png`
+removes them).
 
 ## Screenshots
 

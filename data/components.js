@@ -3,11 +3,11 @@ window.DEMO = window.DEMO || {};
 window.DEMO.components = {
   schema: 1,
   zones: [
-    { id: "apps", label: "APPLICATIONS", x: 12, y: 40, w: 196, h: 400 },
-    { id: "agents", label: "AI SRE AGENTS", x: 222, y: 40, w: 236, h: 400 },
-    { id: "router", label: "SOVEREIGN ROUTER", x: 472, y: 40, w: 290, h: 400 },
-    { id: "outside", label: "OUTSIDE THE CLUSTER", x: 776, y: 40, w: 172, h: 400 },
-    { id: "platform", label: "PLATFORM", x: 12, y: 456, w: 936, h: 92 },
+    { id: "apps", label: "APPLICATIONS", title: "Applications", x: 12, y: 40, w: 196, h: 400 },
+    { id: "agents", label: "AI SRE AGENTS", title: "AI SRE agents", x: 222, y: 40, w: 236, h: 400 },
+    { id: "router", label: "SOVEREIGN ROUTER", title: "Sovereign router", x: 472, y: 40, w: 290, h: 400 },
+    { id: "outside", label: "OUTSIDE THE CLUSTER", title: "Outside the cluster", x: 776, y: 40, w: 172, h: 400 },
+    { id: "platform", label: "PLATFORM", title: "Platform", x: 12, y: 456, w: 936, h: 92 },
   ],
   components: [
     { id: "app-payments", zone: "apps", name: "quarkus-buggy-app", sub: "payments · restricted", kind: "app",

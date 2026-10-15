@@ -3,7 +3,7 @@ window.DEMO = window.DEMO || {};
 window.DEMO.scenarios = {
  "schema": 1,
  "captured_at": "2026-10-15",
- "router_version": "v0.12.0",
+ "router_version": "v0.12.1",
  "cluster": "redacted",
  "gates": [
   {
