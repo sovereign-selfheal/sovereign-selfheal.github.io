@@ -7,3 +7,8 @@ Other names are trademarks of their respective owners.
 
 The screenshots in img/ show the user interfaces of Red Hat OpenShift, Red Hat OpenShift AI
 and Perses, taken on a demo cluster.
+
+The fonts in fonts/ are Red Hat Display, Red Hat Text and Red Hat Mono, version 5.0.0,
+Copyright 2021 The Red Hat Project Authors (https://github.com/RedHatOfficial/RedHatFont),
+licensed under the SIL Open Font License, Version 1.1 (fonts/OFL.txt). They are free fonts and
+do not make this site a Red Hat product.

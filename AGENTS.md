@@ -18,7 +18,8 @@ install guide. It installs nothing and changes no cluster.
 - **Raw data stays outside.** `tools/capture.py` writes outside the repository; `tools/sanitize.py`
   copies only an allowlist of fields into `data/*.js`. To show a new field, add it to the allowlist in
   `sanitize.py` on purpose; never copy whole log lines or spans.
-- **Nothing from other sites.** No CDN, no web fonts, no analytics, no external images or scripts. The
+- **Nothing from other sites.** No CDN, no fonts from other sites, no analytics, no external images or
+  scripts (the Red Hat fonts are in `fonts/`, SIL Open Font License). The
   Content Security Policy in every page must keep `default-src 'self'` and `script-src 'self'`. Links
   (`<a href>`) to other sites are fine.
 - **No build step.** Plain HTML, CSS and JavaScript (ES2020, no modules), so GitHub Pages serves the
@@ -35,7 +36,9 @@ install guide. It installs nothing and changes no cluster.
 
 ```
 index.html, install.html, 404.html   pages
-css/site.css                         the only stylesheet (palette of the router diagrams)
+css/site.css                         the only stylesheet: black, white and red for the page; teal (LOCAL),
+                                     amber (SOTA) and rose (restricted) only inside the widgets
+fonts/                               Red Hat Display, Text and Mono (variable woff2, OFL.txt)
 js/common.js                         helpers: element creation, travel(), runner, visibility
 js/simulator.js, replay.js,          one script per widget; each reads one window.DEMO.<name>
   waterfall.js, archmap.js

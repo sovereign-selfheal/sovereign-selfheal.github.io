@@ -18,7 +18,8 @@ install it:
 
 - Static files only: HTML, CSS and plain JavaScript. No build step, no framework.
 - GitHub Pages serves the branch `main` from the root (`.nojekyll` turns Jekyll off).
-- The page loads nothing from other sites: no web fonts, no CDN, no analytics. A Content Security
+- The page loads nothing from other sites: no CDN, no analytics, and the Red Hat fonts are served from
+  `fonts/` (SIL Open Font License 1.1). A Content Security
   Policy in every page enforces it.
 - The data files set `window.DEMO.<name>`, so the page also works when opened from disk (`file://`).
 - Animations stop when a widget is off screen, and `prefers-reduced-motion` shows the final state.

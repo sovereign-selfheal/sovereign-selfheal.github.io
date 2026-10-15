@@ -32,12 +32,12 @@
   const svg = S.svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Timeline of the investigation by lane" });
   LANES.forEach((l, i) => {
     const y = TOP + i * LH;
-    svg.append(S.svgEl("rect", { x: 0, y: y + 2, width: W, height: LH - 4, rx: 8, fill: i % 2 ? "#131c2b" : "#162135" }));
-    svg.append(S.svgEl("text", { x: 14, y: y + LH / 2 + 4, fill: "#9fb2cf", "font-size": 13, text: l.label }));
+    svg.append(S.svgEl("rect", { x: 0, y: y + 2, width: W, height: LH - 4, rx: 8, fill: i % 2 ? "#1f1f1f" : "#242424" }));
+    svg.append(S.svgEl("text", { x: 14, y: y + LH / 2 + 4, fill: "#c7c7c7", "font-size": 13, text: l.label }));
   });
   for (let s = 0; s <= end; s += 10) {
-    svg.append(S.svgEl("line", { x1: x(s), x2: x(s), y1: TOP, y2: H - 24, stroke: "#2a3750", "stroke-dasharray": "2 4" }));
-    svg.append(S.svgEl("text", { x: x(s), y: H - 8, "text-anchor": "middle", fill: "#8d9ab0", "font-size": 11, text: `T+${s}s` }));
+    svg.append(S.svgEl("line", { x1: x(s), x2: x(s), y1: TOP, y2: H - 24, stroke: "#383838", "stroke-dasharray": "2 4" }));
+    svg.append(S.svgEl("text", { x: x(s), y: H - 8, "text-anchor": "middle", fill: "#a3a3a3", "font-size": 11, text: `T+${s}s` }));
   }
   const marks = events.map((e) => {
     const y = laneY(e.lane);
@@ -48,17 +48,17 @@
       node.dataset.w = Math.max(3, x(e.offset_s + e.dur_s) - x(e.offset_s));
       node.append(S.svgEl("title", { text: `${e.title}: ${e.routed_to === "sota-smart" ? "SOTA" : "LOCAL"} (${e.decided_by}), ${S.fmtSecs(e.dur_s)}` }));
     } else if (e.lane === "tools") {
-      node = S.svgEl("circle", { cx: x(e.offset_s), cy: y, r: 6, fill: "#7ea6ff", opacity: 0 });
+      node = S.svgEl("circle", { cx: x(e.offset_s), cy: y, r: 6, fill: "#e0e0e0", opacity: 0 });
       node.append(S.svgEl("title", { text: `${e.title} (${e.detail})` }));
     } else {
-      const color = e.kind === "incident" ? "#f4b04a" : "#7ea6ff";
+      const color = e.kind === "incident" ? "#f4b04a" : "#e0e0e0";
       node = S.svgEl("path", { d: `M ${x(e.offset_s)} ${y - 10} l 8 10 l -8 10 l -8 -10 z`, fill: color, opacity: 0 });
       node.append(S.svgEl("title", { text: e.title }));
     }
     svg.append(node);
     return node;
   });
-  const head = S.svgEl("line", { x1: LEFT, x2: LEFT, y1: TOP - 6, y2: H - 22, stroke: "#e7edf6", "stroke-width": 1.5 });
+  const head = S.svgEl("line", { x1: LEFT, x2: LEFT, y1: TOP - 6, y2: H - 22, stroke: "#ffffff", "stroke-width": 1.5 });
   svg.append(head);
   lanesBox.replaceChildren(svg);
 
