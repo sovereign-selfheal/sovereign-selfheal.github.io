@@ -1,0 +1,9 @@
+Sovereign Self-Healing: LLM Routing and AI SRE Triage on OpenShift AI
+Copyright 2026 the sovereign-selfheal contributors
+
+This is a community demo, not a Red Hat product. Red Hat, OpenShift and the names of the
+Red Hat products are trademarks of Red Hat, Inc. in the United States and other countries.
+Other names are trademarks of their respective owners.
+
+The screenshots in img/ show the user interfaces of Red Hat OpenShift, Red Hat OpenShift AI
+and Perses, taken on a demo cluster.

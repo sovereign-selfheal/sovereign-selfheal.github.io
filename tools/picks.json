@@ -1,0 +1,33 @@
+{
+  "captured_at": "2026-10-15",
+  "router_version": "v0.12.0",
+  "scenarios": [
+    {"id": "restricted-alert", "label": "Alert in a restricted namespace", "trace": "10c140523f1881ef9f125c7e8d6dba7d",
+     "who": "the payments agent",
+     "summary": "The triage agent of the namespace payments investigates an alert. Its request reads metrics and logs of payments, a namespace labelled restricted."},
+    {"id": "short", "label": "Short question", "trace": "11dd3b4f5d2f7cd9835e4ea51edfcb33", "case": "R1"},
+    {"id": "too-big", "label": "Too large for the SOTA model", "trace": "a842e7e018d845cbe5c5e7b8db0b4a97", "case": "K10",
+     "who": "an agent",
+     "summary": "An agent context of 157,466 characters: tool output, logs and metrics, just over the SOTA size cap."},
+    {"id": "budget", "label": "SOTA budget used", "trace": "a01856b649021d1c00afa72a0085f391", "case": "B2"},
+    {"id": "personal-data", "label": "Personal data", "trace": "963834623ebbee2c1f9bdff88b59a023", "case": "R4"},
+    {"id": "implicit", "label": "A person, without keywords", "trace": "da808275ad7c7f2bd9b66c9f69caa6f8", "case": "D7"},
+    {"id": "team-legal", "label": "Team legal", "trace": "08b09687c7b0f166f85673f9209363ef", "case": "A3"},
+    {"id": "clean", "label": "Long, clean and complex", "trace": "02fee2bfd23d0aa3f519e74bd0f35ce0", "case": "N5"}
+  ],
+  "waterfall": [
+    {"id": "sota", "label": "Clean request to SOTA", "trace": "02fee2bfd23d0aa3f519e74bd0f35ce0"},
+    {"id": "privacy", "label": "Personal data stays local", "trace": "963834623ebbee2c1f9bdff88b59a023"},
+    {"id": "namespace", "label": "Restricted namespace", "trace": "10c140523f1881ef9f125c7e8d6dba7d"}
+  ],
+  "investigation": {
+    "namespace": "payments",
+    "data_class": "restricted",
+    "agent_log": "triage-agent-payments-triage-agent.log",
+    "translator_log": "translator.log",
+    "trace_ids": "traces/payments-0539-ids.txt",
+    "incident": "INC0000002",
+    "start": "2026-10-15T05:39:50Z",
+    "end": "2026-10-15T05:40:45Z"
+  }
+}

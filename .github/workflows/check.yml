@@ -1,0 +1,27 @@
+---
+name: check
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Checks only: GitHub Pages serves the branch main as it is, there is no build.
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.2.0
+
+      - name: Check the site (resources, links, data, leaks, images)
+        run: uv run --project tools --locked python tools/check_site.py
+
+      - name: Check the JavaScript syntax
+        run: for f in js/*.js data/*.js; do node --check "$f"; done

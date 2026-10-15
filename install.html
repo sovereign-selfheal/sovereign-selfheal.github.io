@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Install guide · Sovereign Self-Healing</title>
+  <meta name="description" content="Install the Sovereign Self-Healing demo on an OpenShift 4.22 cluster on AWS: requirements, steps, validation and the differences outside the Red Hat Demo Platform.">
+  <meta name="theme-color" content="#0c1320">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Sovereign Self-Healing, home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#131c2b"/><path d="M6 16 H13" stroke="#7ea6ff" stroke-width="2.4" stroke-linecap="round"/><path d="M13 16 C18 16, 18 9, 25 9" stroke="#f4b04a" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M13 16 C18 16, 18 23, 25 23" stroke="#34d3b8" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="13" cy="16" r="3.2" fill="#7ea6ff"/><circle cx="25" cy="9" r="2.4" fill="#f4b04a"/><circle cx="25" cy="23" r="2.4" fill="#34d3b8"/></svg>
+      <span>Sovereign Self-Healing</span>
+    </a>
+    <nav aria-label="Sections">
+      <a href="index.html#story">How it works</a>
+      <a href="index.html#routing">Routing</a>
+      <a href="index.html#agents">Agents</a>
+      <a href="index.html#architecture">Architecture</a>
+      <a href="install.html" aria-current="page">Install</a>
+      <a href="index.html#repos">Repos</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap doc">
+  <section style="border-top:0;padding-top:48px">
+    <p class="eyebrow">Install guide</p>
+    <h1 style="font:700 clamp(30px,5vw,44px)/1.1 var(--font-display);margin:0 0 12px">Install the demo on your cluster</h1>
+    <p class="intro">One Ansible playbook prepares an OpenShift cluster on AWS and hands the workloads to Argo CD. This page is a short guide. The reference is the README of the <a href="https://github.com/sovereign-selfheal/ansible">ansible</a> repository: when the two differ, the README is right.</p>
+    <div class="note info">
+      <b>Tested path.</b> OpenShift 4.22 on AWS, on clusters of the Red Hat Demo Platform (RHDP), as of October 2026. Other OpenShift 4.22 clusters on AWS should work, with the differences listed in <a href="#non-rhdp">Differences on a cluster that is not from RHDP</a>; we have not tested them end to end yet.
+    </div>
+
+    <h2 id="what">What you get</h2>
+    <ul>
+      <li>The operators of the demo, each pinned to a tested version with manual approval: OpenShift AI, OpenShift GitOps, Connectivity Link, External Secrets, Custom Metrics Autoscaler (KEDA), the NVIDIA GPU Operator and the observability operators.</li>
+      <li>Two GPU nodes: one for the local model (Qwen3.8 27B), one for the decision model of the privacy gate.</li>
+      <li>The router with its four gates, Presidio, the three demo applications with their AI SRE agents, the ticketing system, Tempo traces and Perses dashboards: all deployed by Argo CD from the gitops repository.</li>
+    </ul>
+
+    <h2 id="requirements">Requirements</h2>
+    <table>
+      <thead><tr><th>What</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr><td>OpenShift</td><td>4.22 on AWS, with <code>cluster-admin</code>. The preflight stops on other versions, because the operator versions were tested on 4.22.</td></tr>
+        <tr><td>GPU quota on AWS</td><td>One <code>g7e.2xlarge</code> (NVIDIA RTX PRO 6000 Blackwell, 96 GB) for the local model, and one <code>g6e.2xlarge</code> (NVIDIA L40S, 48 GB) for the decision model, in the region of the cluster. The playbook creates both nodes (200 GiB disk each). Smaller or older GPUs cannot run the local model.</td></tr>
+        <tr><td>Cluster</td><td>A default StorageClass and the default catalogs (<code>redhat-operators</code>, <code>certified-operators</code>). The pull secret of the cluster must reach <code>registry.redhat.io</code>, as on every OpenShift cluster.</td></tr>
+        <tr><td>Workstation</td><td><code>git</code>, <a href="https://docs.astral.sh/uv/">uv</a>, and optionally <code>oc</code> to log in. uv installs Ansible and the Python libraries in a local environment.</td></tr>
+        <tr><td>External model (optional)</td><td>An OpenAI-compatible endpoint and an API key. Without it the demo runs in <b>local-only mode</b>: every request goes to the local model.</td></tr>
+      </tbody>
+    </table>
+    <p class="request-meta">The two GPU instances run as long as the demo is up. Scale them to zero when you do not use the demo (see <a href="#remove">Remove</a>).</p>
+
+    <h2 id="steps">Steps</h2>
+    <ol class="steps">
+      <li>
+        <b>Get the code and the tools</b>
+<pre>git clone https://github.com/sovereign-selfheal/ansible.git
+cd ansible
+uv sync                                                        # Python tools from uv.lock
+uv run ansible-galaxy collection install -r requirements.yml   # Ansible collections</pre>
+      </li>
+      <li>
+        <b>Optional: set the external model</b>
+        <p>The settings of the external (SOTA) model stay on your machine, in a file encrypted with ansible-vault. Set all of <code>sota_api_base</code>, <code>sota_model</code>, <code>sota_served_match</code> and <code>sota_api_key</code>, or none of them.</p>
+<pre>cp group_vars/all/vault.yml.example group_vars/all/vault.yml
+ansible-vault encrypt group_vars/all/vault.yml
+ansible-vault edit group_vars/all/vault.yml
+
+# the password file that scripts/run-playbook.sh reads
+mkdir -p ~/.config/sovereign-selfheal
+( umask 077; read -rs -p 'Vault password: ' p &amp;&amp; printf '%s\n' "$p" &gt; ~/.config/sovereign-selfheal/vault-pass )</pre>
+      </li>
+      <li>
+        <b>Log in to the cluster</b>
+<pre>export KUBECONFIG=~/.kube/demo.kubeconfig
+# or: oc login --token=&lt;token&gt; --server=https://api.&lt;cluster&gt;:6443</pre>
+      </li>
+      <li>
+        <b>Run the bootstrap</b>
+<pre>scripts/run-playbook.sh playbooks/site.yml</pre>
+        <p>It runs six stages: preflight, the GPU nodes and the pre-pull of the model images, the operators, the optional team users, the cluster prerequisites, and the Argo CD seed. The seed waits until every Argo CD application is synced and healthy. A full run takes about 35 to 60 minutes; the first start of the local model on a new GPU node is the longest part. A second run must report <code>changed=0</code>.</p>
+        <p>If AWS has no GPU capacity in a zone, the GPU machine stays in <code>Provisioning</code>. Give the zones in another order:</p>
+<pre>scripts/run-playbook.sh playbooks/site.yml -e '{"gpu_node_prep_zones": ["us-east-2b", "us-east-2a", "us-east-2c"]}'</pre>
+      </li>
+      <li>
+        <b>Validate the install</b>
+<pre>cd ..                                                          # next to the ansible checkout
+git clone https://github.com/sovereign-selfheal/validation.git
+cd validation
+uv sync
+uv run ansible-galaxy collection install -r requirements.yml
+uv run ansible-playbook playbooks/validate.yml                                 # read-only checks
+uv run ansible-playbook playbooks/validate.yml -e validation_disruptive=true   # all checks, about 25 min</pre>
+        <p>Each check prints <code>PASS</code>, <code>FAIL</code>, <code>WARN</code> or <code>SKIP</code>. The run fails only with a <code>FAIL</code>. A <code>WARN</code> on P4 is expected: OLM proposes newer operator versions, and the pinning policy leaves them unapproved.</p>
+      </li>
+      <li>
+        <b>Use the demo</b>
+        <p>In the OpenShift console, open <i>Observe → Dashboards</i> in the project <code>maas-routing</code>, and <i>Observe → Traces</i>. The menu of the console has links to the router traces. To call the router yourself, take the API key of a tier and send a request to the model <code>auto</code>:</p>
+<pre>KEY=$(oc get secret apikey-research-1 -n maas-routing -o jsonpath='{.data.api_key}' | base64 -d)
+DOMAIN=$(oc get ingresses.config/cluster -o jsonpath='{.spec.domain}')
+curl -s https://router.$DOMAIN/v1/chat/completions \
+  -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' \
+  -d '{"model": "auto", "messages": [{"role": "user", "content": "What is the capital of France?"}]}'
+oc logs -n maas-routing deploy/litellm -c litellm | grep policy-router | tail -1   # the decision</pre>
+      </li>
+    </ol>
+
+    <h2 id="profiles">Smaller profiles</h2>
+<pre># GPU profile without the decision model (only the GPU node of the local model)
+scripts/run-playbook.sh playbooks/site.yml -e decision_model_enabled=false
+
+# CPU profile for quick tests: a small model on CPU, no GPU node, no decision model
+scripts/run-playbook.sh playbooks/site.yml -e gpu_enabled=false</pre>
+
+    <h2 id="non-rhdp">Differences on a cluster that is not from RHDP</h2>
+    <table>
+      <thead><tr><th>Topic</th><th>On RHDP</th><th>On another cluster</th></tr></thead>
+      <tbody>
+        <tr><td>GitOps, cert-manager, Keycloak operators</td><td>Already installed; the playbook adopts them.</td><td>The playbook installs them at the tested versions.</td></tr>
+        <tr><td>Certificates</td><td>Let's Encrypt certificates on the router and the API.</td><td>The default self-signed router certificate: browsers and clients warn, unless you add your own certificate.</td></tr>
+        <tr><td>Login</td><td>A user <code>admin</code> through the RHDP identity provider.</td><td><code>kubeadmin</code>. Team users are optional (<code>team_users</code> in the vault): the playbook then installs Keycloak.</td></tr>
+        <tr><td>Argo CD UI</td><td>The user <code>admin</code> is an Argo CD admin.</td><td>Check the RBAC of the Argo CD instance if you want to change applications from its UI.</td></tr>
+        <tr><td>Load balancer</td><td>Classic load balancer; the playbook raises its idle timeout to 10 minutes.</td><td>Same with a Classic load balancer. With a Network Load Balancer, long answers that do not stream can stop after 60 seconds.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="remove">Remove</h2>
+    <p>There is no teardown playbook yet. To stop paying for the GPUs, scale both GPU pools to zero; run <code>site.yml</code> again to bring them back:</p>
+<pre>scripts/run-playbook.sh playbooks/20-prereqs.yml -e gpu_node_prep_replicas=0 -e gpu_node_prep_decision_replicas=0</pre>
+    <p>To remove everything, delete the cluster.</p>
+
+    <h2 id="more">Read more</h2>
+    <ul>
+      <li><a href="https://github.com/sovereign-selfheal/ansible#readme">ansible README</a>: stages, operators and their versions, every variable.</li>
+      <li><a href="https://github.com/sovereign-selfheal/gitops#readme">gitops README</a>: the components, the routing policies, the dashboards.</li>
+      <li><a href="https://github.com/sovereign-selfheal/router#readme">router README</a>: the four gates in detail, with their log lines and traces.</li>
+      <li><a href="https://github.com/sovereign-selfheal/validation#readme">validation README</a>: every check and its group.</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Sovereign Self-Healing</b>: a community demo, not a Red Hat product. Red Hat and OpenShift are trademarks of Red Hat, Inc. Code under the Apache License 2.0. <a href="index.html">Back to the overview</a>.</p>
+  </div>
+</footer>
+<script src="js/common.js"></script>
+</body>
+</html>

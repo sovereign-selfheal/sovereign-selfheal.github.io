@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Sovereign Self-Healing</title>
+  <meta name="description" content="LLM routing and AI SRE triage on OpenShift AI: AI agents investigate incidents, and every LLM call passes a sovereign router that keeps sensitive data in the cluster.">
+  <meta property="og:title" content="Sovereign Self-Healing: LLM Routing and AI SRE Triage on OpenShift AI">
+  <meta property="og:description" content="AI agents investigate incidents. Every LLM call passes a router that keeps sensitive data on the local GPU.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sovereign-selfheal.github.io/">
+  <meta name="theme-color" content="#0c1320">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Sovereign Self-Healing, home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#131c2b"/><path d="M6 16 H13" stroke="#7ea6ff" stroke-width="2.4" stroke-linecap="round"/><path d="M13 16 C18 16, 18 9, 25 9" stroke="#f4b04a" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M13 16 C18 16, 18 23, 25 23" stroke="#34d3b8" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="13" cy="16" r="3.2" fill="#7ea6ff"/><circle cx="25" cy="9" r="2.4" fill="#f4b04a"/><circle cx="25" cy="23" r="2.4" fill="#34d3b8"/></svg>
+      <span>Sovereign Self-Healing</span>
+    </a>
+    <nav aria-label="Sections">
+      <a href="#story">How it works</a>
+      <a href="#routing">Routing</a>
+      <a href="#agents">Agents</a>
+      <a href="#traces">Traces</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#mlflow">MLflow</a>
+      <a href="install.html">Install</a>
+      <a href="#repos">Repos</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">A demo on Red Hat OpenShift AI</p>
+        <h1>Sovereign <span class="accent">Self-Healing</span></h1>
+        <p class="sub">LLM routing and AI SRE triage on OpenShift AI</p>
+        <p class="lead">When an application breaks, an AI SRE agent investigates it: metrics, logs, a diagnosis and an incident ticket. Every LLM call of the agent passes a <b>sovereign router</b>. Sensitive data stays on a GPU in the cluster. Only clean and complex work goes to an external model.</p>
+        <div class="cta">
+          <a class="btn primary" href="#routing">See the router decide</a>
+          <a class="btn" href="install.html">Install it on your cluster</a>
+        </div>
+      </div>
+      <svg class="hero-art" viewBox="0 0 480 300" role="img" aria-label="Requests from the agents pass the router: most stay on the local GPU, a few go to the external model">
+        <defs>
+          <linearGradient id="hg" x1="0" x2="1"><stop offset="0" stop-color="#7ea6ff" stop-opacity="0.15"/><stop offset="1" stop-color="#7ea6ff" stop-opacity="0.45"/></linearGradient>
+        </defs>
+        <rect x="6" y="104" width="104" height="92" rx="14" fill="#131c2b" stroke="#2a3750"/>
+        <text x="58" y="146" text-anchor="middle" fill="#e7edf6" font-size="14" font-weight="600">AI SRE</text>
+        <text x="58" y="164" text-anchor="middle" fill="#e7edf6" font-size="14" font-weight="600">agents</text>
+        <rect x="176" y="84" width="128" height="132" rx="16" fill="url(#hg)" stroke="#7ea6ff"/>
+        <text x="240" y="140" text-anchor="middle" fill="#e7edf6" font-size="15" font-weight="700">Sovereign</text>
+        <text x="240" y="160" text-anchor="middle" fill="#e7edf6" font-size="15" font-weight="700">router</text>
+        <text x="240" y="182" text-anchor="middle" fill="#8d9ab0" font-size="11">4 gates</text>
+        <rect x="364" y="196" width="110" height="80" rx="14" fill="#131c2b" stroke="#34d3b8"/>
+        <text x="419" y="232" text-anchor="middle" fill="#34d3b8" font-size="13" font-weight="700">Local GPU</text>
+        <text x="419" y="250" text-anchor="middle" fill="#8d9ab0" font-size="11">in the cluster</text>
+        <rect x="364" y="24" width="110" height="80" rx="14" fill="#131c2b" stroke="#f4b04a" stroke-dasharray="5 4"/>
+        <text x="419" y="60" text-anchor="middle" fill="#f4b04a" font-size="13" font-weight="700">External</text>
+        <text x="419" y="78" text-anchor="middle" fill="#8d9ab0" font-size="11">SOTA model</text>
+        <path id="h-in" d="M 110 150 L 176 150" stroke="#2a3750" stroke-width="2" fill="none"/>
+        <path id="h-local" d="M 304 170 C 340 170, 330 236, 364 236" stroke="#2a3750" stroke-width="2" fill="none"/>
+        <path id="h-sota" d="M 304 130 C 340 130, 330 64, 364 64" stroke="#2a3750" stroke-width="2" fill="none"/>
+        <g class="anim">
+          <circle r="5" fill="#7ea6ff"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#h-in"/></animateMotion></circle>
+          <circle r="5" fill="#7ea6ff"><animateMotion dur="1.6s" begin="0.53s" repeatCount="indefinite"><mpath href="#h-in"/></animateMotion></circle>
+          <circle r="5" fill="#7ea6ff"><animateMotion dur="1.6s" begin="1.06s" repeatCount="indefinite"><mpath href="#h-in"/></animateMotion></circle>
+          <circle r="5" fill="#34d3b8"><animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#h-local"/></animateMotion></circle>
+          <circle r="5" fill="#34d3b8"><animateMotion dur="1.8s" begin="0.6s" repeatCount="indefinite"><mpath href="#h-local"/></animateMotion></circle>
+          <circle r="5" fill="#34d3b8"><animateMotion dur="1.8s" begin="1.2s" repeatCount="indefinite"><mpath href="#h-local"/></animateMotion></circle>
+          <circle r="5" fill="#f4b04a"><animateMotion dur="3.6s" begin="0.9s" repeatCount="indefinite"><mpath href="#h-sota"/></animateMotion></circle>
+        </g>
+      </svg>
+    </div>
+    <div class="wrap">
+      <div class="stats">
+        <div class="stat accent"><b>4 gates</b><span>run before any call leaves the cluster</span></div>
+        <div class="stat local"><b>44 s</b><span>from the alert webhook to the incident, in a real run</span></div>
+        <div class="stat sota"><b>85 checks</b><span>validate every new install of the demo</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="story" class="story">
+    <div class="wrap">
+      <p class="eyebrow">How it works</p>
+      <h2>Agents fix the platform. The router protects the data.</h2>
+      <p class="intro">AI agents are useful for operations, but they read everything: logs, metrics, tickets, customer data. This demo shows how to use them without sending that data to an external model by default.</p>
+      <div class="cols-3">
+        <div class="card"><span class="num">01</span><h3>Something breaks</h3><p>A demo application runs in three namespaces. It returns errors and slow answers. Prometheus sees it, and Alertmanager fires an alert for the namespace.</p></div>
+        <div class="card"><span class="num">02</span><h3>An agent investigates</h3><p>The AI SRE agent of that namespace gets the alert. With MCP tools it reads metrics, pod lists and logs. It writes a diagnosis and opens an incident.</p></div>
+        <div class="card"><span class="num">03</span><h3>The router decides</h3><p>Every LLM call goes through one endpoint. Four gates decide: the local model on the cluster GPU, or the external SOTA model. Restricted namespaces and sensitive data never go out.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="routing">
+    <div class="wrap">
+      <p class="eyebrow">Dynamic routing</p>
+      <h2>Watch the router decide</h2>
+      <p class="intro">Each example is a real request of the demo, with the real decision line of the router. The first gate that says LOCAL decides, and the gates after it do not run. Pick an example, or let them play.</p>
+      <div class="sim" id="sim">
+        <div class="chips" role="group" aria-label="Example requests"></div>
+        <div class="stage" aria-describedby="sim-meta"></div>
+        <div class="sim-panels">
+          <div class="card" id="sim-request"></div>
+          <div class="card" id="sim-log"></div>
+        </div>
+        <div class="controls">
+          <button class="btn" id="sim-prev" type="button" aria-label="Previous example">&#8592; Previous</button>
+          <button class="btn primary" id="sim-play" type="button" aria-pressed="true">Pause</button>
+          <button class="btn" id="sim-next" type="button" aria-label="Next example">Next &#8594;</button>
+          <span class="hint">Keys: &#8592; &#8594; on the buttons, N and P on the page</span>
+        </div>
+      </div>
+      <p class="datacard" id="sim-meta"></p>
+      <div class="cols-2" style="margin-top:24px">
+        <div class="card">
+          <h3 style="margin-top:0">The four gates</h3>
+          <p><span class="tag restricted">1 NAMESPACE</span> A request about a namespace labelled <code>restricted</code> stays local. No other gate runs.</p>
+          <p><span class="tag local">2 EFFICIENCY</span> Short requests, requests over the SOTA size cap and requests of a team that used its SOTA token budget stay local.</p>
+          <p><span class="tag local">3 PRIVACY</span> Rules (IBAN, cards, tax codes), lexicons, Presidio and a small decision model look for sensitive data. If a detector fails, the request stays local.</p>
+          <p><span class="tag local">4 TIERING</span> Some teams may use only the local model, for example the legal team.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Why it matters</h3>
+          <p>The agents send large contexts: tool output, logs, metrics. A request can carry customer data without anyone noticing. The router checks the whole request, the system prompt and the tool output included, before a single byte goes out.</p>
+          <p>Every decision is logged and traced, so you can always answer the question: <i>which data left the cluster, and why?</i></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="agents">
+    <div class="wrap">
+      <p class="eyebrow">AI SRE agents</p>
+      <h2>From the alert to the incident</h2>
+      <p class="intro">A real investigation, replayed from the logs and traces of the demo cluster. The namespace <code>payments</code> is restricted, so every LLM turn of its agent stayed on the local GPU.</p>
+      <div class="card" id="replay">
+        <div class="replay-head">
+          <div>
+            <p class="panel-title" style="margin:0">Investigation replay</p>
+            <p id="replay-title" style="margin:4px 0 0;font-weight:600"></p>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <span class="clock" id="replay-clock" aria-live="off">T+0.0 s</span>
+            <button class="btn" id="replay-play" type="button">Play</button>
+          </div>
+        </div>
+        <div class="lanes" id="replay-lanes" style="margin-top:12px"></div>
+        <div class="replay-grid">
+          <ol class="events" id="replay-events" aria-label="Events of the investigation"></ol>
+          <div>
+            <p class="panel-title">What happens</p>
+            <p>The alert reaches the <b>ogx-alert-translator</b>, which calls the agent of the alert's namespace. The agent works in turns: the model asks for tools, the tools answer, and the model asks again.</p>
+            <p>The agent uses three MCP servers, all in the cluster: <b>Prometheus</b> for metrics, <b>OpenShift</b> for pods and logs (read-only), and the <b>ticketing system</b>. At the end it opens an incident with its diagnosis.</p>
+            <p>Each LLM turn is a request to the router, like any other client: same gates, same logs, same traces.</p>
+          </div>
+        </div>
+      </div>
+      <p class="datacard" id="replay-meta"></p>
+    </div>
+  </section>
+
+  <section id="traces">
+    <div class="wrap">
+      <p class="eyebrow">Traces</p>
+      <h2>Every decision is a trace</h2>
+      <p class="intro">The router sends OpenTelemetry traces to Tempo in the cluster. The gates are child spans of <code>router.chain</code>, with their verdict and reason. Click a span to read its attributes.</p>
+      <div class="card" id="waterfall">
+        <div class="tabs" role="group" aria-label="Traces"></div>
+        <div style="overflow-x:auto"><table class="wf" id="wf-table"></table></div>
+        <div class="attrs" id="wf-attrs"></div>
+      </div>
+      <p class="datacard" id="wf-meta"></p>
+    </div>
+  </section>
+
+  <section id="architecture">
+    <div class="wrap">
+      <p class="eyebrow">Architecture</p>
+      <h2>What runs where</h2>
+      <p class="intro">Everything runs on one OpenShift cluster on AWS, with two GPU nodes. Only the external SOTA model is outside. Hover or focus a component to read what it does.</p>
+      <div class="map" id="map">
+        <div class="map-grid">
+          <div class="card" id="map-svg"></div>
+          <div class="card map-info" id="map-info" aria-live="polite"></div>
+        </div>
+        <div class="map-list card" id="map-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="dashboards">
+    <div class="wrap">
+      <p class="eyebrow">Dashboards</p>
+      <h2>See it in the OpenShift console</h2>
+      <p class="intro">Perses dashboards in the console show where the requests went, which gate decided and how busy the GPUs are. A live page shows every decision as it happens.</p>
+      <div class="gallery">
+        <figure>
+          <img src="img/screens/perses-routing-decisions.png" alt="Perses dashboard Sovereign router - routing decisions: requests kept local, sent to SOTA, stopped by the privacy gate, and a pie chart of the gate that decided" width="1819" height="925" loading="lazy">
+          <figcaption>Routing decisions: what stayed local, what went out, and which gate decided.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="mlflow">
+    <div class="wrap">
+      <p class="eyebrow">MLflow <span class="tag preview">PREVIEW</span></p>
+      <h2>A flight recorder for the agent</h2>
+      <p class="intro">Red Hat MLflow, part of OpenShift AI, can record every investigation of the agent: each LLM turn, each tool call, the tokens and the time. A local judge model can score the diagnosis. This part was tested in a spike and is not in the default install yet: read <a href="https://github.com/sovereign-selfheal/gitops/blob/main/docs/mlflow/README.md">the results of the spike</a>.</p>
+      <div class="gallery">
+        <figure>
+          <img src="img/mlflow/14-trace-timeline-full.png" alt="MLflow trace of one investigation: seven LLM turns and the MCP tool calls between them, on a timeline of 48 seconds" width="1853" height="859" loading="lazy">
+          <figcaption>One investigation: LLM turns and MCP tool calls on a timeline.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/mlflow/17-judge-rationale.png" alt="MLflow assessments of an investigation: root cause correct, ticket created, and the rationale of a local judge model" width="1853" height="1033" loading="lazy">
+          <figcaption>A local judge model scores the diagnosis and explains why.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/mlflow/12-traces-list.png" alt="MLflow list of agent traces with tokens, execution time and assessment averages" width="1824" height="979" loading="lazy">
+          <figcaption>All investigations, with tokens, time and scores.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="install-teaser">
+    <div class="wrap">
+      <p class="eyebrow">Try it</p>
+      <h2>Install it on your cluster</h2>
+      <div class="cols-2">
+        <div>
+          <p class="intro" style="margin-bottom:12px">One Ansible playbook installs the operators with pinned versions, prepares two GPU nodes and seeds Argo CD. Argo CD deploys everything else from git. A full install takes about 40 to 60 minutes; a validation playbook checks the result.</p>
+          <a class="btn primary" href="install.html">Read the install guide</a>
+        </div>
+        <pre class="card mono" style="margin:0;overflow-x:auto">git clone https://github.com/sovereign-selfheal/ansible.git
+cd ansible
+uv sync
+uv run ansible-galaxy collection install -r requirements.yml
+scripts/run-playbook.sh playbooks/site.yml</pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="repos">
+    <div class="wrap">
+      <p class="eyebrow">Source</p>
+      <h2>The repositories</h2>
+      <p class="intro">Everything is open source on GitHub, in the organization <a href="https://github.com/sovereign-selfheal">sovereign-selfheal</a>.</p>
+      <div class="repos">
+        <a class="repo" href="https://github.com/sovereign-selfheal/ansible"><b>ansible</b><span>Day 0/1 bootstrap: operators, GPU nodes, gateway, Argo CD seed.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/gitops"><b>gitops</b><span>Every workload as a Helm chart, deployed by Argo CD.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/router"><b>router</b><span>LiteLLM with the policy hook: the four gates.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/presidio"><b>presidio</b><span>Presidio image with English and Italian models.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/modelcar"><b>modelcar</b><span>The local models as OCI images (modelcars).</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/validation"><b>validation</b><span>85 checks of a live install.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/triage-agent"><b>triage-agent</b><span>The AI SRE agent and its UI.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/triage-agent-operator"><b>triage-agent-operator</b><span>One agent per namespace from a TriageAgent resource.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/ogx-alert-translator"><b>ogx-alert-translator</b><span>From an Alertmanager webhook to the right agent.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/prometheus-mcp-server"><b>prometheus-mcp-server</b><span>PromQL as MCP tools.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/mock-ticketing-system"><b>mock-ticketing-system</b><span>A ServiceNow-like incident API and its MCP server.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/quarkus-buggy-app"><b>quarkus-buggy-app</b><span>The application that breaks on purpose.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/routing-live-view"><b>routing-live-view</b><span>The live page of the routing decisions.</span></a>
+        <a class="repo" href="https://github.com/sovereign-selfheal/sovereign-selfheal.github.io"><b>sovereign-selfheal.github.io</b><span>This site.</span></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap cols-2">
+    <div>
+      <p><b>Sovereign Self-Healing</b>: LLM Routing and AI SRE Triage on OpenShift AI. A community demo, not a Red Hat product.</p>
+      <p>Red Hat, OpenShift and the Red Hat OpenShift AI product names are trademarks of Red Hat, Inc. Other names are trademarks of their owners. Code under the Apache License 2.0.</p>
+    </div>
+    <div>
+      <p><span class="live-dot" aria-hidden="true"></span><b>This page loads nothing from other sites.</b> No fonts, scripts or analytics from third parties: open the network tab of your browser and check. A Content Security Policy enforces it.</p>
+      <p>The data of the widgets comes from a demo cluster, cleaned by <a href="https://github.com/sovereign-selfheal/sovereign-selfheal.github.io/tree/main/tools">these scripts</a>.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="js/common.js"></script>
+<script src="data/scenarios.js"></script>
+<script src="data/investigation.js"></script>
+<script src="data/traces.js"></script>
+<script src="data/components.js"></script>
+<script src="js/simulator.js"></script>
+<script src="js/replay.js"></script>
+<script src="js/waterfall.js"></script>
+<script src="js/archmap.js"></script>
+</body>
+</html>
