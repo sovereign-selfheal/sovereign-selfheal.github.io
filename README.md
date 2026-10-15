@@ -64,8 +64,9 @@ removes them).
 
 ## Screenshots
 
-Images in `img/` must not show host names, user names or tokens. Crop the browser bar before you add
-a screenshot, and run `check_site.py --strip-png`.
+Images in `img/` must not show host names, user names, tokens, or prompts and answers of the agents
+(cover them, as in `img/mlflow/`). Crop the browser bar before you add a screenshot, and run
+`check_site.py --strip-png`.
 
 ## License
 
