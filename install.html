@@ -35,7 +35,7 @@
   <section style="border-top:0;padding-top:48px">
     <p class="eyebrow">Install guide</p>
     <h1 style="font:700 clamp(30px,5vw,44px)/1.1 var(--font-display);margin:0 0 12px">Install the demo on your cluster</h1>
-    <p class="intro">One Ansible playbook prepares an OpenShift cluster on AWS and hands the workloads to Argo CD. This page is a short guide. The reference is the README of the <a href="https://github.com/sovereign-selfheal/ansible">ansible</a> repository: when the two differ, the README is right.</p>
+    <p class="intro">One Ansible playbook prepares an OpenShift cluster on AWS, then Argo CD deploys the workloads from git. This page is a short guide. The reference is the README of the <a href="https://github.com/sovereign-selfheal/ansible">ansible</a> repository: when the two differ, the README is right.</p>
     <div class="note info">
       <b>Tested path.</b> OpenShift 4.22 on AWS, on clusters of the Red Hat Demo Platform (RHDP), as of October 2026. Other OpenShift 4.22 clusters on AWS should work, with the differences listed in <a href="#non-rhdp">Differences on a cluster that is not from RHDP</a>; we have not tested them end to end yet.
     </div>
@@ -51,9 +51,9 @@
     <table>
       <thead><tr><th>What</th><th>Details</th></tr></thead>
       <tbody>
-        <tr><td>OpenShift</td><td>4.22 on AWS, with <code>cluster-admin</code>. The preflight stops on other versions, because the operator versions were tested on 4.22.</td></tr>
+        <tr><td>OpenShift</td><td>4.22 on AWS, with <code>cluster-admin</code>. The preflight check stops on other versions, because the operator versions were tested on 4.22.</td></tr>
         <tr><td>GPU quota on AWS</td><td>One <code>g7e.2xlarge</code> (NVIDIA RTX PRO 6000 Blackwell, 96 GB) for the local model, and one <code>g6e.2xlarge</code> (NVIDIA L40S, 48 GB) for the decision model, in the region of the cluster. The playbook creates both nodes (200 GiB disk each). Smaller or older GPUs cannot run the local model.</td></tr>
-        <tr><td>Cluster</td><td>A default StorageClass and the default catalogs (<code>redhat-operators</code>, <code>certified-operators</code>). The pull secret of the cluster must reach <code>registry.redhat.io</code>, as on every OpenShift cluster.</td></tr>
+        <tr><td>Cluster</td><td>A default StorageClass and the default catalogs (<code>redhat-operators</code>, <code>certified-operators</code>). The cluster must pull images from <code>registry.redhat.io</code> with its pull secret, as every OpenShift cluster does.</td></tr>
         <tr><td>Workstation</td><td><code>git</code>, <a href="https://docs.astral.sh/uv/">uv</a>, and optionally <code>oc</code> to log in. uv installs Ansible and the Python libraries in a local environment.</td></tr>
         <tr><td>External model (optional)</td><td>An OpenAI-compatible endpoint and an API key. Without it the demo runs in <b>local-only mode</b>: every request goes to the local model.</td></tr>
       </tbody>
