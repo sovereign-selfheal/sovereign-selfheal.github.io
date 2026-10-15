@@ -47,12 +47,13 @@
     });
   }
 
-  // Move a glowing dot along the SVG path data d in ms milliseconds.
-  function travel(svg, d, color, ms, alive) {
+  // Move a glowing dot along the SVG path data d in ms milliseconds. cls is the CSS class that
+  // colors the dot (pkt-start, pkt-local, ...), so the color follows the theme.
+  function travel(svg, d, cls, ms, alive) {
     return new Promise((resolve) => {
       const path = svgEl("path", { d, fill: "none", stroke: "none" });
-      const halo = svgEl("circle", { r: 13, fill: color, opacity: 0.22 });
-      const dot = svgEl("circle", { r: 6.5, fill: color });
+      const halo = svgEl("circle", { r: 13, class: cls, opacity: 0.22 });
+      const dot = svgEl("circle", { r: 6.5, class: cls });
       svg.append(path, halo, dot);
       const len = path.getTotalLength();
       let start = null;
@@ -96,8 +97,31 @@
 
   window.Site = { $, $$, el, svgEl, reducedMotion, runner, wait, travel, onVisible, hashParam, setHashParam, fmtSecs, fmtMs, utc };
 
+  // Theme button: switch between light and dark and remember the choice (js/theme.js applies it on
+  // the next visit). Without a choice the page follows the system setting.
+  function setupThemeButton() {
+    const btn = $(".theme-toggle");
+    if (!btn) return;
+    const system = window.matchMedia("(prefers-color-scheme: light)");
+    const current = () => document.documentElement.getAttribute("data-theme") || (system.matches ? "light" : "dark");
+    const label = () => {
+      const next = current() === "light" ? "dark" : "light";
+      btn.setAttribute("aria-label", `Switch to the ${next} theme`);
+      btn.title = `Switch to the ${next} theme`;
+    };
+    btn.addEventListener("click", () => {
+      const next = current() === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+      try { window.localStorage.setItem("theme", next); } catch (e) { /* no storage: only this page view */ }
+      label();
+    });
+    if (system.addEventListener) system.addEventListener("change", label);
+    label();
+  }
+
   // Highlight the section of the menu that is on screen.
   document.addEventListener("DOMContentLoaded", () => {
+    setupThemeButton();
     const links = $$(".top nav a[href^='#']");
     const map = new Map(links.map((a) => [a.getAttribute("href").slice(1), a]));
     if (!("IntersectionObserver" in window) || map.size === 0) return;

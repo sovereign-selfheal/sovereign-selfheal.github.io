@@ -23,6 +23,9 @@ install it:
   Policy in every page enforces it.
 - The data files set `window.DEMO.<name>`, so the page also works when opened from disk (`file://`).
 - Animations stop when a widget is off screen, and `prefers-reduced-motion` shows the final state.
+- Two themes, dark and light: the page follows the system setting (`prefers-color-scheme`), and the
+  button in the menu switches it (the choice is kept in the browser, `localStorage`). All colors are
+  CSS variables in `css/site.css`; the scripts use classes, never color values.
 
 ## Preview
 

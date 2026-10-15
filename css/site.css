@@ -1,4 +1,4 @@
-/* Sovereign Self-Healing site. Palette of the router diagrams and of the live page. */
+/* Sovereign Self-Healing site. Two themes: dark and light, chosen by the system or by the button. */
 /* Self-hosted fonts (Red Hat Display, Text and Mono, SIL Open Font License 1.1, see fonts/OFL.txt). */
 @font-face { font-family: "Red Hat Display"; src: url("../fonts/RedHatDisplay-VF.woff2") format("woff2"); font-weight: 300 900; font-style: normal; font-display: swap; }
 @font-face { font-family: "Red Hat Text"; src: url("../fonts/RedHatText-VF.woff2") format("woff2"); font-weight: 300 700; font-style: normal; font-display: swap; }
@@ -7,7 +7,8 @@
 
 /* Black, white and red for the page. Inside the widgets the colors carry meaning, as on the live page
    and the dashboards of the demo: teal = LOCAL, amber = SOTA, rose = restricted namespace; the red of
-   the page is never used there. */
+   the page is never used there. Dark theme first; the light theme follows the system setting
+   (prefers-color-scheme) unless the visitor chose a theme with the button (data-theme on <html>). */
 :root {
   color-scheme: dark;
   --bg: #151515;
@@ -20,17 +21,92 @@
   --normal: #c7c7c7;
   --accent: #ee0000;        /* page accent: main button, title, step numbers */
   --accent-hover: #be0000;
-  --accent-text: #f56e6e;   /* red for small text on black (contrast 6.4:1) */
+  --accent-text: #f56e6e;   /* red for small text (contrast 6.4:1 on the dark background) */
+  --on-accent: #ffffff;
   --link: #92c5f9;
   --link-hover: #b9dafc;
   --neutral: #e0e0e0;       /* highlight inside the widgets */
   --local: #34d3b8;
   --sota: #f4b04a;
   --restricted: #ff6670;
+  --header-bg: rgba(21, 21, 21, 0.92);
+  --gate-local-fill: #2a3a37;       /* opaque mixes of panel-2 and the state color */
+  --gate-restricted-fill: #3e2f30;
+  --dest-local-fill: #2b413d;
+  --dest-sota-fill: #463c2e;
+  --node-hover-fill: #333333;
+  --zone-fill: rgba(41, 41, 41, 0.35);
+  --track: rgba(56, 56, 56, 0.45);
+  --row-line: rgba(56, 56, 56, 0.6);
+  --lane-a: #242424;
+  --lane-b: #1f1f1f;
   --radius: 12px;
   --font-display: "Red Hat Display", system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-text: "Red Hat Text", system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-mono: "Red Hat Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* Light theme: white page, black text, red accent; state colors darker for contrast on white
+   (LOCAL 5.4:1, SOTA 5.2:1, restricted 5.6:1). */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #ffffff;
+    --panel: #f5f5f5;
+    --panel-2: #ececec;
+    --line: #d2d2d2;
+    --wire: #8a8d90;
+    --text: #151515;
+    --muted: #4d4d4d;
+    --normal: #383838;
+    --accent-text: #be0000;
+    --link: #0066cc;
+    --link-hover: #004d99;
+    --neutral: #151515;
+    --local: #087866;
+    --sota: #a35a00;
+    --restricted: #c9184a;
+    --header-bg: rgba(255, 255, 255, 0.92);
+    --gate-local-fill: #d1dedc;
+    --gate-restricted-fill: #e8d3d9;
+    --dest-local-fill: #c8d9d6;
+    --dest-sota-fill: #e0d5c6;
+    --node-hover-fill: #e0e0e0;
+    --zone-fill: rgba(0, 0, 0, 0.03);
+    --track: rgba(0, 0, 0, 0.08);
+    --row-line: rgba(0, 0, 0, 0.08);
+    --lane-a: #f0f0f0;
+    --lane-b: #f7f7f7;
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --panel: #f5f5f5;
+  --panel-2: #ececec;
+  --line: #d2d2d2;
+  --wire: #8a8d90;
+  --text: #151515;
+  --muted: #4d4d4d;
+  --normal: #383838;
+  --accent-text: #be0000;
+  --link: #0066cc;
+  --link-hover: #004d99;
+  --neutral: #151515;
+  --local: #087866;
+  --sota: #a35a00;
+  --restricted: #c9184a;
+  --header-bg: rgba(255, 255, 255, 0.92);
+  --gate-local-fill: #d1dedc;
+  --gate-restricted-fill: #e8d3d9;
+  --dest-local-fill: #c8d9d6;
+  --dest-sota-fill: #e0d5c6;
+  --node-hover-fill: #e0e0e0;
+  --zone-fill: rgba(0, 0, 0, 0.03);
+  --track: rgba(0, 0, 0, 0.08);
+  --row-line: rgba(0, 0, 0, 0.08);
+  --lane-a: #f0f0f0;
+  --lane-b: #f7f7f7;
 }
 
 * { box-sizing: border-box; }
@@ -53,7 +129,7 @@ code, pre, .mono { font-family: var(--font-mono); font-size: 0.88em; }
 /* Header */
 .top {
   position: sticky; top: 0; z-index: 10;
-  background: rgba(21, 21, 21, 0.92);
+  background: var(--header-bg);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
 }
@@ -80,8 +156,8 @@ code, pre, .mono { font-family: var(--font-mono); font-size: 0.88em; }
   font: 600 15px var(--font-text); cursor: pointer;
 }
 .btn:hover { border-color: var(--accent); color: var(--text); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #ffffff; }
-.btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: #ffffff; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 36px; }
 .stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
 .stat b { display: block; font: 700 28px/1.1 var(--font-display); }
@@ -144,12 +220,14 @@ h3 { font: 600 20px/1.3 var(--font-display); margin: 28px 0 8px; }
 .gate rect { fill: var(--panel-2); stroke: var(--line); stroke-width: 1.5; transition: stroke 0.25s, fill 0.25s; }
 .gate .title { fill: var(--text); font-weight: 600; font-size: 14px; }
 .gate .q { fill: var(--muted); font-size: 11px; }
+.dest .title { fill: var(--text); font-weight: 600; font-size: 14px; }
+.dest .q { fill: var(--muted); font-size: 11px; }
 .gate.pass rect { stroke: var(--neutral); }
-.gate.local rect { stroke: var(--local); fill: #2a3a37; }
-.gate.restricted rect { stroke: var(--restricted); fill: #3e2f30; }
+.gate.local rect { stroke: var(--local); fill: var(--gate-local-fill); }
+.gate.restricted rect { stroke: var(--restricted); fill: var(--gate-restricted-fill); }
 .dest rect { fill: var(--panel-2); stroke: var(--line); stroke-width: 1.5; transition: stroke 0.25s, fill 0.25s; }
-.dest.local.hit rect { stroke: var(--local); fill: #2b413d; }
-.dest.sota.hit rect { stroke: var(--sota); fill: #463c2e; }
+.dest.local.hit rect { stroke: var(--local); fill: var(--dest-local-fill); }
+.dest.sota.hit rect { stroke: var(--sota); fill: var(--dest-sota-fill); }
 .wire { fill: none; stroke: var(--line); stroke-width: 2; }
 .wire.drop { stroke-dasharray: 4 5; }
 .zone { fill: none; stroke: var(--wire); stroke-dasharray: 6 6; stroke-width: 1; opacity: 0.6; }
@@ -176,12 +254,12 @@ h3 { font: 600 20px/1.3 var(--font-display); margin: 28px 0 8px; }
 .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .wf { width: 100%; border-collapse: collapse; font-size: 13px; }
 .wf th { text-align: left; color: var(--muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
-.wf td { padding: 5px 8px; border-bottom: 1px solid rgba(56, 56, 56, 0.6); vertical-align: middle; }
+.wf td { padding: 5px 8px; border-bottom: 1px solid var(--row-line); vertical-align: middle; }
 .wf tr.span { cursor: pointer; }
 .wf tr.span:hover td, .wf tr.span.sel td { background: var(--panel-2); }
 .wf .name { font-family: var(--font-mono); white-space: nowrap; }
 .wf .bar-cell { width: 55%; }
-.wf .track { position: relative; height: 14px; background: rgba(56, 56, 56, 0.45); border-radius: 3px; }
+.wf .track { position: relative; height: 14px; background: var(--track); border-radius: 3px; }
 .wf .bar { position: absolute; top: 0; height: 100%; border-radius: 3px; min-width: 2px; background: var(--wire); transform-origin: left; transition: transform 0.6s ease-out; }
 .wf .bar.chain { background: var(--neutral); }
 .wf .bar.local { background: var(--local); }
@@ -200,12 +278,12 @@ h3 { font: 600 20px/1.3 var(--font-display); margin: 28px 0 8px; }
 .node text { fill: var(--text); font-size: 12.5px; font-weight: 600; pointer-events: none; }
 .node .sub { fill: var(--muted); font-size: 10.5px; font-weight: 400; }
 .node { cursor: pointer; }
-.node:hover rect, .node:focus rect, .node.sel rect { stroke: var(--neutral); fill: #333333; }
+.node:hover rect, .node:focus rect, .node.sel rect { stroke: var(--neutral); fill: var(--node-hover-fill); }
 .node.external rect { stroke-dasharray: 5 4; }
 .node.preview rect { stroke-dasharray: 2 3; }
 .edge { fill: none; stroke: var(--wire); stroke-width: 1.5; opacity: 0.55; }
 .edge.hot { stroke: var(--neutral); opacity: 1; }
-.map-zone { fill: rgba(41, 41, 41, 0.35); stroke: var(--line); }
+.map-zone { fill: var(--zone-fill); stroke: var(--line); }
 .map-zone-label { fill: var(--muted); font-size: 11px; letter-spacing: 0.12em; }
 .map-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
 .map-info h3 { margin-top: 0; }
@@ -239,6 +317,40 @@ h3 { font: 600 20px/1.3 var(--font-display); margin: 28px 0 8px; }
   content: counter(step); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%;
   display: grid; place-items: center; background: var(--panel-2); border: 1px solid var(--accent); color: var(--accent-text); font: 700 14px var(--font-mono);
 }
+
+/* SVG parts colored by the theme (no colors in SVG attributes). */
+.svg-sub { fill: var(--muted); font-size: 11px; }
+.lane-bg.a { fill: var(--lane-a); }
+.lane-bg.b { fill: var(--lane-b); }
+.lane-label { fill: var(--normal); font-size: 13px; }
+.tick-line { stroke: var(--line); stroke-dasharray: 2 4; }
+.tick-text { fill: var(--muted); font-size: 11px; }
+.mark-llm.local { fill: var(--local); }
+.mark-llm.sota { fill: var(--sota); }
+.mark-tool, .mark-event { fill: var(--neutral); }
+.mark-incident { fill: var(--sota); }
+.playhead { stroke: var(--text); stroke-width: 1.5; }
+.pkt-start { fill: var(--neutral); }
+.pkt-local { fill: var(--local); }
+.pkt-sota { fill: var(--sota); }
+.pkt-restricted { fill: var(--restricted); }
+.hero-box { fill: var(--panel); stroke: var(--line); }
+.hero-wire { stroke: var(--line); stroke-width: 2; fill: none; }
+.hero-title { fill: var(--text); font-weight: 600; font-size: 14px; }
+.hero-strong { fill: var(--text); font-weight: 700; font-size: 15px; }
+.hero-sub { fill: var(--muted); font-size: 11px; }
+.hero-local rect { fill: var(--panel); stroke: var(--local); }
+.hero-local .hero-name { fill: var(--local); font-weight: 700; font-size: 13px; }
+.hero-sota rect { fill: var(--panel); stroke: var(--sota); stroke-dasharray: 5 4; }
+.hero-sota .hero-name { fill: var(--sota); font-weight: 700; font-size: 13px; }
+
+/* Theme button in the header. */
+.theme-toggle {
+  flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; margin-left: 4px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); cursor: pointer;
+}
+.theme-toggle:hover { border-color: var(--neutral); }
+.theme-toggle svg { width: 18px; height: 18px; }
 
 /* Footer */
 footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }

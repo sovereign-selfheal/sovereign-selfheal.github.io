@@ -180,6 +180,14 @@ def check_leaks() -> None:
                 fail(f"{f.relative_to(ROOT)}:{n}: possible leak {match!r}")
 
 
+def check_theme() -> None:
+    """Colors live in css/site.css (two themes): no color literals in the scripts."""
+    for f in sorted((ROOT / "js").glob("*.js")):
+        for n, line in enumerate(f.read_text().splitlines(), 1):
+            if re.search(r"#[0-9a-fA-F]{6}\b|rgba?\(", line):
+                fail(f"{f.relative_to(ROOT)}:{n}: color literal; use a CSS class or variable (themes)")
+
+
 def png_chunks(data: bytes):
     i = 8
     while i < len(data):
@@ -213,6 +221,7 @@ def main() -> None:
     check_pages()
     check_data()
     check_leaks()
+    check_theme()
     check_png(args.strip_png)
     for p in problems:
         print("FAIL", p)

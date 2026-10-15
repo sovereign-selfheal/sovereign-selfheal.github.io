@@ -24,6 +24,9 @@ install guide. It installs nothing and changes no cluster.
   (`<a href>`) to other sites are fine.
 - **No build step.** Plain HTML, CSS and JavaScript (ES2020, no modules), so GitHub Pages serves the
   files as they are and the page works from `file://`.
+- **Two themes.** Every color is a CSS variable of `css/site.css`, defined for the dark and the light
+  theme. Scripts and SVG use classes, never color values (`check_site.py` fails on a color literal in
+  `js/`). Check both themes after a change.
 - **Accessibility.** Every widget works with the keyboard, has a static view for
   `prefers-reduced-motion`, and fits a 375 px screen without horizontal scroll.
 - **Run `tools/check_site.py` before every commit.** The CI runs it too. Leak patterns live in

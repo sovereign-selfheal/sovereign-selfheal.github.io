@@ -6,7 +6,8 @@
   const root = document.getElementById("sim");
   if (!root || !D) return;
 
-  const COLORS = { start: "#e0e0e0", local: "#34d3b8", sota: "#f4b04a", restricted: "#ff6670" };
+  // CSS classes of the moving dot (colors in css/site.css, so they follow the theme).
+  const PKT = { start: "pkt-start", local: "pkt-local", sota: "pkt-sota", restricted: "pkt-restricted" };
   const chipsBox = S.$(".chips", root);
   const stage = S.$(".stage", root);
   const reqBox = S.$("#sim-request", root);
@@ -80,8 +81,8 @@
     grp.append(S.svgEl("rect", { x: b.x, y: b.y, width: b.w, height: b.h, rx: 10 }));
     const lines = [].concat(subs || []);
     const top = b.y + b.h / 2 - (lines.length * 13) / 2 + 2;
-    grp.append(S.svgEl("text", { x: b.x + b.w / 2, y: top, "text-anchor": "middle", class: "title", fill: "#ffffff", "font-weight": 600, "font-size": 14, text: title }));
-    lines.forEach((t, i) => grp.append(S.svgEl("text", { x: b.x + b.w / 2, y: top + 16 + i * 13, "text-anchor": "middle", class: "q", fill: "#a3a3a3", "font-size": 11, text: t })));
+    grp.append(S.svgEl("text", { x: b.x + b.w / 2, y: top, "text-anchor": "middle", class: "title", "font-weight": 600, "font-size": 14, text: title }));
+    lines.forEach((t, i) => grp.append(S.svgEl("text", { x: b.x + b.w / 2, y: top + 16 + i * 13, "text-anchor": "middle", class: "q", "font-size": 11, text: t })));
     return grp;
   }
 
@@ -99,7 +100,7 @@
     svg.append(S.svgEl("path", { class: "wire", d: L.wire }));
     L.gates.forEach((g, i) => svg.append(S.svgEl("path", { class: "wire drop", d: L.dropWire(i) })));
     svg.append(box("dest req", L.request, "Request", [], { id: "sim-req-box" }));
-    L.reqSub = S.svgEl("text", { x: L.request.x + L.request.w / 2, y: L.request.y + L.request.h / 2 + 17, "text-anchor": "middle", fill: "#a3a3a3", "font-size": 11 });
+    L.reqSub = S.svgEl("text", { x: L.request.x + L.request.w / 2, y: L.request.y + L.request.h / 2 + 17, "text-anchor": "middle", class: "svg-sub" });
     svg.append(L.reqSub);
     L.gateNodes = gates.map((gd, i) => {
       const n = box("gate", L.gates[i], `${i + 1} · ${gd.title}`, wrapWords(gd.question, L.qmax));
@@ -205,16 +206,16 @@
     const d = decidingIndex(sc);
     const last = d >= 0 ? d : gates.length - 1;
     for (let i = 0; i <= last; i++) {
-      if (!(await S.travel(svg, L.seg(i), COLORS.start, 620, alive))) return false;
+      if (!(await S.travel(svg, L.seg(i), PKT.start, 620, alive))) return false;
       markGate(sc, i, i === d);
       if (!(await S.wait(260, alive))) return false;
     }
     if (d >= 0) {
-      const color = gates[d].id === "namespace" ? COLORS.restricted : COLORS.local;
+      const color = gates[d].id === "namespace" ? PKT.restricted : PKT.local;
       if (!(await S.travel(svg, L.drop(d), color, 900, alive))) return false;
       L.localNode.classList.add("hit");
     } else {
-      if (!(await S.travel(svg, L.toSota, COLORS.sota, 760, alive))) return false;
+      if (!(await S.travel(svg, L.toSota, PKT.sota, 760, alive))) return false;
       L.sotaNode.classList.add("hit");
     }
     light("final");
@@ -246,9 +247,9 @@
 
   // ---- wiring ---------------------------------------------------------------------------
   scenarios.forEach((sc, i) => {
-    const color = sc.routed_to === "sota-smart" ? COLORS.sota : sc.decided_by === "namespace" ? COLORS.restricted : COLORS.local;
+    const kind = sc.routed_to === "sota-smart" ? "sota" : sc.decided_by === "namespace" ? "restricted" : "local";
     const chip = S.el("button", { class: "chip", type: "button", "aria-pressed": "false" }, [
-      S.el("span", { class: "dot", style: `background:${color}` }), sc.label,
+      S.el("span", { class: "dot", style: `background:var(--${kind})` }), sc.label,
     ]);
     chip.addEventListener("click", () => pick(i));
     chipsBox.append(chip);

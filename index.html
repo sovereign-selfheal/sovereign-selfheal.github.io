@@ -10,8 +10,10 @@
   <meta property="og:description" content="AI agents investigate incidents. Every LLM call passes a router that keeps sensitive data on the local GPU.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://sovereign-selfheal.github.io/">
-  <meta name="theme-color" content="#151515">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151515" media="(prefers-color-scheme: dark)">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/site.css">
 </head>
 <body>
@@ -31,6 +33,7 @@
       <a href="install.html">Install</a>
       <a href="#repos">Repos</a>
     </nav>
+    <button class="theme-toggle" type="button" aria-label="Switch theme"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5 A7.5 7.5 0 0 1 10 17.5 Z" fill="currentColor"/></svg></button>
   </div>
 </header>
 
@@ -51,30 +54,34 @@
         <defs>
           <linearGradient id="hg" x1="0" x2="1"><stop offset="0" stop-color="#ee0000" stop-opacity="0.15"/><stop offset="1" stop-color="#ee0000" stop-opacity="0.45"/></linearGradient>
         </defs>
-        <rect x="6" y="104" width="104" height="92" rx="14" fill="#1f1f1f" stroke="#383838"/>
-        <text x="58" y="146" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="600">AI SRE</text>
-        <text x="58" y="164" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="600">agents</text>
+        <rect class="hero-box" x="6" y="104" width="104" height="92" rx="14"/>
+        <text class="hero-title" x="58" y="146" text-anchor="middle">AI SRE</text>
+        <text class="hero-title" x="58" y="164" text-anchor="middle">agents</text>
         <rect x="176" y="84" width="128" height="132" rx="16" fill="url(#hg)" stroke="#ee0000"/>
-        <text x="240" y="140" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">Sovereign</text>
-        <text x="240" y="160" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700">router</text>
-        <text x="240" y="182" text-anchor="middle" fill="#a3a3a3" font-size="11">4 gates</text>
-        <rect x="364" y="196" width="110" height="80" rx="14" fill="#1f1f1f" stroke="#34d3b8"/>
-        <text x="419" y="232" text-anchor="middle" fill="#34d3b8" font-size="13" font-weight="700">Local GPU</text>
-        <text x="419" y="250" text-anchor="middle" fill="#a3a3a3" font-size="11">in the cluster</text>
-        <rect x="364" y="24" width="110" height="80" rx="14" fill="#1f1f1f" stroke="#f4b04a" stroke-dasharray="5 4"/>
-        <text x="419" y="60" text-anchor="middle" fill="#f4b04a" font-size="13" font-weight="700">External</text>
-        <text x="419" y="78" text-anchor="middle" fill="#a3a3a3" font-size="11">SOTA model</text>
-        <path id="h-in" d="M 110 150 L 176 150" stroke="#383838" stroke-width="2" fill="none"/>
-        <path id="h-local" d="M 304 170 C 340 170, 330 236, 364 236" stroke="#383838" stroke-width="2" fill="none"/>
-        <path id="h-sota" d="M 304 130 C 340 130, 330 64, 364 64" stroke="#383838" stroke-width="2" fill="none"/>
+        <text class="hero-strong" x="240" y="140" text-anchor="middle">Sovereign</text>
+        <text class="hero-strong" x="240" y="160" text-anchor="middle">router</text>
+        <text class="hero-sub" x="240" y="182" text-anchor="middle">4 gates</text>
+        <g class="hero-local">
+          <rect x="364" y="196" width="110" height="80" rx="14"/>
+          <text class="hero-name" x="419" y="232" text-anchor="middle">Local GPU</text>
+          <text class="hero-sub" x="419" y="250" text-anchor="middle">in the cluster</text>
+        </g>
+        <g class="hero-sota">
+          <rect x="364" y="24" width="110" height="80" rx="14"/>
+          <text class="hero-name" x="419" y="60" text-anchor="middle">External</text>
+          <text class="hero-sub" x="419" y="78" text-anchor="middle">SOTA model</text>
+        </g>
+        <path class="hero-wire" id="h-in" d="M 110 150 L 176 150"/>
+        <path class="hero-wire" id="h-local" d="M 304 170 C 340 170, 330 236, 364 236"/>
+        <path class="hero-wire" id="h-sota" d="M 304 130 C 340 130, 330 64, 364 64"/>
         <g class="anim">
-          <circle r="5" fill="#ffffff"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#h-in"/></animateMotion></circle>
-          <circle r="5" fill="#ffffff"><animateMotion dur="1.6s" begin="0.53s" repeatCount="indefinite"><mpath href="#h-in"/></animateMotion></circle>
-          <circle r="5" fill="#ffffff"><animateMotion dur="1.6s" begin="1.06s" repeatCount="indefinite"><mpath href="#h-in"/></animateMotion></circle>
-          <circle r="5" fill="#34d3b8"><animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#h-local"/></animateMotion></circle>
-          <circle r="5" fill="#34d3b8"><animateMotion dur="1.8s" begin="0.6s" repeatCount="indefinite"><mpath href="#h-local"/></animateMotion></circle>
-          <circle r="5" fill="#34d3b8"><animateMotion dur="1.8s" begin="1.2s" repeatCount="indefinite"><mpath href="#h-local"/></animateMotion></circle>
-          <circle r="5" fill="#f4b04a"><animateMotion dur="3.6s" begin="0.9s" repeatCount="indefinite"><mpath href="#h-sota"/></animateMotion></circle>
+          <circle class="pkt-start" r="5"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#h-in"/></animateMotion></circle>
+          <circle class="pkt-start" r="5"><animateMotion dur="1.6s" begin="0.53s" repeatCount="indefinite"><mpath href="#h-in"/></animateMotion></circle>
+          <circle class="pkt-start" r="5"><animateMotion dur="1.6s" begin="1.06s" repeatCount="indefinite"><mpath href="#h-in"/></animateMotion></circle>
+          <circle class="pkt-local" r="5"><animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#h-local"/></animateMotion></circle>
+          <circle class="pkt-local" r="5"><animateMotion dur="1.8s" begin="0.6s" repeatCount="indefinite"><mpath href="#h-local"/></animateMotion></circle>
+          <circle class="pkt-local" r="5"><animateMotion dur="1.8s" begin="1.2s" repeatCount="indefinite"><mpath href="#h-local"/></animateMotion></circle>
+          <circle class="pkt-sota" r="5"><animateMotion dur="3.6s" begin="0.9s" repeatCount="indefinite"><mpath href="#h-sota"/></animateMotion></circle>
         </g>
       </svg>
     </div>

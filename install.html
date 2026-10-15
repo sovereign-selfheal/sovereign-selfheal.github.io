@@ -6,8 +6,10 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Install guide · Sovereign Self-Healing</title>
   <meta name="description" content="Install the Sovereign Self-Healing demo on an OpenShift 4.22 cluster on AWS: requirements, steps, validation and the differences outside the Red Hat Demo Platform.">
-  <meta name="theme-color" content="#151515">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151515" media="(prefers-color-scheme: dark)">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script src="js/theme.js"></script>
   <link rel="stylesheet" href="css/site.css">
 </head>
 <body>
@@ -25,6 +27,7 @@
       <a href="install.html" aria-current="page">Install</a>
       <a href="index.html#repos">Repos</a>
     </nav>
+    <button class="theme-toggle" type="button" aria-label="Switch theme"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5 A7.5 7.5 0 0 1 10 17.5 Z" fill="currentColor"/></svg></button>
   </div>
 </header>
 
