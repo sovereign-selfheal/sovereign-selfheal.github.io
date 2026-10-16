@@ -161,12 +161,16 @@ def check_data() -> None:
                 if "text" in s["request"] and not s["request"].get("case"):
                     fail(f"{f.name}: scenario {s['id']}: request text without a validation case")
         if name == "investigation":
-            offsets = [e["offset_s"] for e in d["events"]]
-            if offsets != sorted(offsets, key=lambda o: round(o, 1)):
-                fail(f"{f.name}: events are not in time order")
-            for e in d["events"]:
-                if "text" in e:
-                    fail(f"{f.name}: event {e['title']!r} carries text of the agent")
+            if not d.get("investigations"):
+                fail(f"{f.name}: no investigations")
+            for inv in d.get("investigations", []):
+                where = f"{f.name}: {inv['namespace']}"
+                offsets = [e["offset_s"] for e in inv["events"]]
+                if offsets != sorted(offsets, key=lambda o: round(o, 1)):
+                    fail(f"{where}: events are not in time order")
+                for e in inv["events"]:
+                    if "text" in e:
+                        fail(f"{where}: event {e['title']!r} carries text of the agent")
 
 
 def check_leaks() -> None:

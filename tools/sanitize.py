@@ -287,8 +287,8 @@ def parse_ts(s: str) -> float:
     return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=UTC).timestamp()
 
 
-def build_investigation(raw: Path, picks: dict) -> dict:
-    inv = picks["investigation"]
+def build_investigation(raw: Path, inv: dict) -> dict:
+    """One investigation of picks.json `investigations`: from the webhook to the incident."""
     ns = inv["namespace"]
     start = parse_ts(inv["start"].replace("Z", ".000000Z"))
     end = parse_ts(inv["end"].replace("Z", ".000000Z"))
@@ -310,16 +310,17 @@ def build_investigation(raw: Path, picks: dict) -> dict:
 
     calls = {}
     for line in (raw / "raw" / inv["agent_log"]).read_text(errors="replace").splitlines():
-        m = re.match(TS + r" .*Tool call (started|completed): (.+?) → ([a-z_]+)", line)
+        # A failed call ends with "Tool call failed: <server> → <tool>: <error>"; the error text is not copied.
+        m = re.match(TS + r" .*Tool call (started|completed|failed): (.+?) → ([a-z_]+)", line)
         if m:
             t = parse_ts(m.group(1))
             key = (m.group(3), m.group(4))
             if m.group(2) == "started":
-                calls.setdefault(key, []).append([t, None])
+                calls.setdefault(key, []).append([t, None, False])
             else:
                 for c in calls.get(key, []):
                     if c[1] is None:
-                        c[1] = t
+                        c[1], c[2] = t, m.group(2) == "failed"
                         break
             continue
         m = re.match(TS + r" .*Triggered run starting", line)
@@ -330,9 +331,9 @@ def build_investigation(raw: Path, picks: dict) -> dict:
             add(parse_ts(m.group(1)), "agent", "run_end", "The agent writes its report",
                 detail=f"report of {m.group(2)} characters")
     for (server, tool), items in calls.items():
-        for t0, t1 in items:
+        for t0, t1, failed in items:
             add(t0, "tools", "tool", tool, detail=server.replace(" MCP", "") + " MCP",
-                dur_s=round((t1 or t0) - t0, 3))
+                dur_s=round((t1 or t0) - t0, 3), failed=failed)
 
     turn = 0
     for tid in (raw / "raw" / inv["trace_ids"]).read_text().split():
@@ -350,7 +351,7 @@ def build_investigation(raw: Path, picks: dict) -> dict:
     inc = next(i for i in incidents if i["number"] == inv["incident"])
     opened = datetime.strptime(inc["opened_at"], "%Y-%m-%d %H:%M:%S").replace(tzinfo=UTC).timestamp()
     # opened_at has whole seconds: the incident exists when the create_incident call that made it ends.
-    made = [t1 for (_, tool), items in calls.items() if tool == "create_incident" for _, t1 in items
+    made = [t1 for (_, tool), items in calls.items() if tool == "create_incident" for _, t1, _ in items
             if t1 and abs(t1 - opened) < 2]
     # Only the number and the priority: the text of the incident was written by the agent's model.
     add(made[0] if made else opened, "ticket", "incident", f"Incident {inc['number']} opened",
@@ -377,13 +378,22 @@ def build_investigation(raw: Path, picks: dict) -> dict:
             "opened_at": inc["opened_at"].replace(" ", "T") + "Z",
         },
         "events": events,
+    }
+
+
+def build_investigations(raw: Path, picks: dict) -> dict:
+    return {
+        "investigations": [build_investigation(raw, inv) for inv in picks["investigations"]],
         "notes": [
             (
-                "The alert was already firing when the cluster finished its install, so T0 is the webhook, "
-                "not the alert."
+                "T0 is the Alertmanager webhook, not the start of the alert: the alert was already firing, "
+                "and Alertmanager sends it again while it lasts."
             ),
-            "Times come from the translator and agent logs, the router traces (Tempo) and the incident.",
-            "Prompts, model answers and the text of the incident were removed; only its number and priority are kept.",
+            "Times come from the translator and agent logs, the router traces (Tempo) and the incidents.",
+            (
+                "Prompts, model answers and the text of the incidents were removed; only their number and "
+                "priority are kept."
+            ),
         ],
     }
 
@@ -427,7 +437,7 @@ def main() -> None:
     prompts = validation_prompts(args.validation)
     write_js(args.out / "scenarios.js", "scenarios", meta, build_scenarios(args.raw, picks, prompts))
     write_js(args.out / "traces.js", "traces", meta, build_traces(args.raw, picks))
-    write_js(args.out / "investigation.js", "investigation", meta, build_investigation(args.raw, picks))
+    write_js(args.out / "investigation.js", "investigation", meta, build_investigations(args.raw, picks))
 
 
 if __name__ == "__main__":

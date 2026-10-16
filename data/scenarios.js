@@ -2,7 +2,7 @@
 window.DEMO = window.DEMO || {};
 window.DEMO.scenarios = {
  "schema": 1,
- "captured_at": "2026-10-15",
+ "captured_at": "2026-10-16",
  "router_version": "v0.12.1",
  "cluster": "redacted",
  "gates": [
@@ -45,7 +45,7 @@ window.DEMO.scenarios = {
     "who": "the payments agent",
     "team": "agents-payments",
     "summary": "The triage agent of the payments namespace investigates an alert. Its request carries the alert, a pod list and metrics of payments, a namespace labelled restricted.",
-    "prompt_chars": 32681
+    "prompt_chars": 39283
    },
    "routed_to": "local-fast",
    "decided_by": "namespace",
@@ -58,9 +58,9 @@ window.DEMO.scenarios = {
     }
    ],
    "model": "qwen38-local",
-   "duration_ms": 4333.9,
-   "ts": "2026-10-15T05:40:00.397Z",
-   "trace_id": "10c140523f1881ef9f125c7e8d6dba7d"
+   "duration_ms": 17608.3,
+   "ts": "2026-10-16T10:01:42.774Z",
+   "trace_id": "ea45e8d9ee6c4bee54b6d0cb44687dcc"
   },
   {
    "id": "short",
@@ -88,9 +88,9 @@ window.DEMO.scenarios = {
     }
    ],
    "model": "qwen38-local",
-   "duration_ms": 386.2,
-   "ts": "2026-10-15T05:43:20.118Z",
-   "trace_id": "11dd3b4f5d2f7cd9835e4ea51edfcb33"
+   "duration_ms": 300.6,
+   "ts": "2026-10-16T09:17:42.263Z",
+   "trace_id": "3cfbd9653ece6cfd33402ec9df2cc08b"
   },
   {
    "id": "too-big",
@@ -118,9 +118,9 @@ window.DEMO.scenarios = {
     }
    ],
    "model": "qwen38-local",
-   "duration_ms": 14198.4,
-   "ts": "2026-10-15T05:59:03.163Z",
-   "trace_id": "a842e7e018d845cbe5c5e7b8db0b4a97"
+   "duration_ms": 14145.6,
+   "ts": "2026-10-16T09:34:10.994Z",
+   "trace_id": "b7d3a0f6b6c11ed43974900160a29dfa"
   },
   {
    "id": "budget",
@@ -148,9 +148,9 @@ window.DEMO.scenarios = {
     }
    ],
    "model": "qwen38-local",
-   "duration_ms": 674.7,
-   "ts": "2026-10-15T06:05:53.192Z",
-   "trace_id": "a01856b649021d1c00afa72a0085f391"
+   "duration_ms": 668.9,
+   "ts": "2026-10-16T09:42:42.958Z",
+   "trace_id": "01444c7bdc3a17a47b09f903575730e4"
   },
   {
    "id": "personal-data",
@@ -183,9 +183,9 @@ window.DEMO.scenarios = {
     }
    ],
    "model": "qwen38-local",
-   "duration_ms": 1615.7,
-   "ts": "2026-10-15T05:43:31.532Z",
-   "trace_id": "963834623ebbee2c1f9bdff88b59a023"
+   "duration_ms": 1554.9,
+   "ts": "2026-10-16T09:17:57.149Z",
+   "trace_id": "6cfadb0fcbd118c371b119384572c6ca"
   },
   {
    "id": "implicit",
@@ -199,7 +199,7 @@ window.DEMO.scenarios = {
    },
    "routed_to": "local-fast",
    "decided_by": "privacy",
-   "reason": "privacy: score 0.80 (systemone/biz@0.03(ignored):0.00, systemone/llm@1.00(person):0.80) >= 0.70[team=research] -> LOCAL",
+   "reason": "privacy: score 0.80 (systemone/biz@0.07(ignored):0.00, systemone/llm@1.00(person):0.80) >= 0.70[team=research] -> LOCAL",
    "steps": [
     {
      "gate": "namespace",
@@ -214,13 +214,13 @@ window.DEMO.scenarios = {
     {
      "gate": "privacy",
      "verdict": "local",
-     "reason": "privacy: score 0.80 (systemone/biz@0.03(ignored):0.00, systemone/llm@1.00(person):0.80) >= 0.70[team=research]"
+     "reason": "privacy: score 0.80 (systemone/biz@0.07(ignored):0.00, systemone/llm@1.00(person):0.80) >= 0.70[team=research]"
     }
    ],
    "model": "qwen38-local",
-   "duration_ms": 997.1,
-   "ts": "2026-10-15T05:46:30.043Z",
-   "trace_id": "da808275ad7c7f2bd9b66c9f69caa6f8"
+   "duration_ms": 984.4,
+   "ts": "2026-10-16T09:21:31.134Z",
+   "trace_id": "fbab4f1033708723da613450485a9364"
   },
   {
    "id": "team-legal",
@@ -249,7 +249,7 @@ window.DEMO.scenarios = {
     {
      "gate": "privacy",
      "verdict": "sota",
-     "reason": "privacy: score 0.00 (systemone/biz@0.52(ignored):0.00) < 0.30[team=legal]"
+     "reason": "privacy: score 0.00 (systemone/biz@0.05(ignored):0.00) < 0.30[team=legal]"
     },
     {
      "gate": "tiering",
@@ -258,9 +258,9 @@ window.DEMO.scenarios = {
     }
    ],
    "model": "qwen38-local",
-   "duration_ms": 2660.2,
-   "ts": "2026-10-15T07:51:14.191Z",
-   "trace_id": "08b09687c7b0f166f85673f9209363ef"
+   "duration_ms": 2253.0,
+   "ts": "2026-10-16T09:17:37.539Z",
+   "trace_id": "2b6257f97a8faf71e4cae3f50edbd3ff"
   },
   {
    "id": "clean",
@@ -274,7 +274,7 @@ window.DEMO.scenarios = {
    },
    "routed_to": "sota-smart",
    "decided_by": "all-sota",
-   "reason": "privacy: score 0.00 (systemone/biz@0.80(ignored):0.00) < 0.70[team=research] -> SOTA",
+   "reason": "privacy: score 0.00 (systemone/biz@0.94(ignored):0.00) < 0.70[team=research] -> SOTA",
    "steps": [
     {
      "gate": "namespace",
@@ -289,13 +289,13 @@ window.DEMO.scenarios = {
     {
      "gate": "privacy",
      "verdict": "sota",
-     "reason": "privacy: score 0.00 (systemone/biz@0.80(ignored):0.00) < 0.70[team=research]"
+     "reason": "privacy: score 0.00 (systemone/biz@0.94(ignored):0.00) < 0.70[team=research]"
     }
    ],
    "model": "gemini-2.5-pro",
-   "duration_ms": 2194.6,
-   "ts": "2026-10-15T07:39:05.182Z",
-   "trace_id": "02fee2bfd23d0aa3f519e74bd0f35ce0"
+   "duration_ms": 1984.4,
+   "ts": "2026-10-16T09:18:35.195Z",
+   "trace_id": "682b3ba5fddbc241db118f92e3239858"
   }
  ]
 };

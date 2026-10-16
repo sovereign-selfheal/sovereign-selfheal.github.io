@@ -328,6 +328,7 @@ h3 { font: 600 20px/1.3 var(--font-display); margin: 28px 0 8px; }
 .mark-llm.local { fill: var(--local); }
 .mark-llm.sota { fill: var(--sota); }
 .mark-tool, .mark-event { fill: var(--neutral); }
+.mark-tool.failed { fill: none; stroke: var(--neutral); stroke-width: 2; }
 .mark-incident { fill: var(--sota); }
 .playhead { stroke: var(--text); stroke-width: 1.5; }
 .pkt-start { fill: var(--neutral); }

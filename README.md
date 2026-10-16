@@ -9,7 +9,7 @@ install it:
 | Part | What it shows | Data |
 |------|---------------|------|
 | Routing simulator | Real requests go through the four gates of the router, to the local model or the SOTA model | `data/scenarios.js` |
-| Investigation replay | A real investigation, from the Alertmanager webhook to the incident | `data/investigation.js` |
+| Investigation replay | Two real investigations (a restricted and a public namespace), from the Alertmanager webhook to the incident | `data/investigation.js` |
 | Trace waterfall | Real router traces from Tempo, with the gates as child spans | `data/traces.js` |
 | Architecture map | Every component, what it does and its repository | `data/components.js` (written by hand) |
 | Install guide | `install.html`: a short guide; the ansible README stays the reference | |
@@ -47,7 +47,7 @@ uv run --project tools python tools/capture.py --out ../site-capture \
 # the translator scales to zero: follow its logs during the alert path, with timestamps
 oc logs -f -n agentic-triage deploy/ogx-alert-translator --timestamps > ../site-capture/raw/translator.log
 
-# 2. pick the requests and the investigation: edit tools/picks.json
+# 2. pick the requests and the investigations: edit tools/picks.json
 
 # 3. build data/*.js; only an allowlist of fields is copied
 uv run --project tools python tools/sanitize.py --raw ../site-capture --validation ../validation --gitops ../gitops

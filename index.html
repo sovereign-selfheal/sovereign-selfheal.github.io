@@ -148,8 +148,9 @@
     <div class="wrap">
       <p class="eyebrow">AI SRE agents</p>
       <h2>From the alert to the incident</h2>
-      <p class="intro">A real investigation, replayed from the logs and traces of the demo cluster. The <code>payments</code> namespace is restricted, so every LLM turn of its agent stayed on the local GPU.</p>
+      <p class="intro">Two real investigations, replayed from the logs and traces of the demo cluster. The <code>payments</code> namespace is restricted, so every LLM turn of its agent stays on the local GPU. The <code>rh-reserve</code> namespace is public: its agent sends clean, complex turns to the external SOTA model.</p>
       <div class="card" id="replay">
+        <div class="chips" id="replay-pick" role="group" aria-label="Choose an investigation" style="margin-bottom:12px"></div>
         <div class="replay-head">
           <div>
             <p class="panel-title" style="margin:0">Investigation replay</p>

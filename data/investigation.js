@@ -2,220 +2,442 @@
 window.DEMO = window.DEMO || {};
 window.DEMO.investigation = {
  "schema": 1,
- "captured_at": "2026-10-15",
+ "captured_at": "2026-10-16",
  "router_version": "v0.12.1",
  "cluster": "redacted",
- "namespace": "payments",
- "data_class": "restricted",
- "alert": {
-  "name": "QuarkusBuggyAppHighErrorRate",
-  "rule": "the share of HTTP 5xx answers of payments-buggy-app is above 10% for 5 minutes"
- },
- "incident": {
-  "number": "INC0000002",
-  "priority": 3,
-  "opened_at": "2026-10-15T05:40:35Z"
- },
- "events": [
+ "investigations": [
   {
-   "lane": "alert",
-   "kind": "webhook",
-   "title": "Alertmanager webhook reaches the translator",
-   "detail": "1 alert(s), namespace payments",
-   "offset_s": 0.0,
-   "ts": "2026-10-15T05:39:52.271Z"
+   "namespace": "payments",
+   "data_class": "restricted",
+   "alert": {
+    "name": "QuarkusBuggyAppHighErrorRate",
+    "rule": "the share of HTTP 5xx answers of payments-buggy-app is above 10% for 5 minutes"
+   },
+   "incident": {
+    "number": "INC0000009",
+    "priority": 3,
+    "opened_at": "2026-10-16T10:02:20Z"
+   },
+   "events": [
+    {
+     "lane": "alert",
+     "kind": "webhook",
+     "title": "Alertmanager webhook reaches the translator",
+     "detail": "1 alert(s), namespace payments",
+     "offset_s": 0.0,
+     "ts": "2026-10-16T10:01:36.171Z"
+    },
+    {
+     "lane": "alert",
+     "kind": "trigger",
+     "title": "The translator calls the agent of the namespace",
+     "detail": "POST /trigger -> 202",
+     "offset_s": 0.096,
+     "ts": "2026-10-16T10:01:36.268Z"
+    },
+    {
+     "lane": "agent",
+     "kind": "run_start",
+     "title": "The agent starts the investigation",
+     "offset_s": 0.094,
+     "ts": "2026-10-16T10:01:36.266Z"
+    },
+    {
+     "lane": "llm",
+     "kind": "llm",
+     "title": "LLM turn 1",
+     "dur_s": 3.71,
+     "routed_to": "local-fast",
+     "decided_by": "namespace",
+     "reason": "namespace: restricted payments (found by scan) -> LOCAL",
+     "model": "qwen38-local",
+     "tokens_in": 8028,
+     "tokens_out": 407,
+     "trace_id": "74ad4c34bbe6a2022afc78b15b53e974",
+     "offset_s": 0.329,
+     "ts": "2026-10-16T10:01:36.501Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "query_prometheus",
+     "detail": "Prometheus MCP",
+     "dur_s": 0.028,
+     "failed": true,
+     "offset_s": 4.041,
+     "ts": "2026-10-16T10:01:40.212Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "query_prometheus",
+     "detail": "Prometheus MCP",
+     "dur_s": 0.023,
+     "failed": true,
+     "offset_s": 4.07,
+     "ts": "2026-10-16T10:01:40.241Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "query_prometheus",
+     "detail": "Prometheus MCP",
+     "dur_s": 0.022,
+     "failed": true,
+     "offset_s": 4.093,
+     "ts": "2026-10-16T10:01:40.264Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "pods_list_in_namespace",
+     "detail": "OpenShift MCP",
+     "dur_s": 0.021,
+     "failed": true,
+     "offset_s": 4.115,
+     "ts": "2026-10-16T10:01:40.286Z"
+    },
+    {
+     "lane": "llm",
+     "kind": "llm",
+     "title": "LLM turn 2",
+     "dur_s": 2.13,
+     "routed_to": "local-fast",
+     "decided_by": "namespace",
+     "reason": "namespace: restricted payments (found by scan) -> LOCAL",
+     "model": "qwen38-local",
+     "tokens_in": 8300,
+     "tokens_out": 232,
+     "trace_id": "adfc1f6894e46f88ad93b39f2746f36c",
+     "offset_s": 4.182,
+     "ts": "2026-10-16T10:01:40.354Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "query_prometheus",
+     "detail": "Prometheus MCP",
+     "dur_s": 0.071,
+     "failed": false,
+     "offset_s": 6.315,
+     "ts": "2026-10-16T10:01:42.486Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "query_prometheus",
+     "detail": "Prometheus MCP",
+     "dur_s": 0.058,
+     "failed": false,
+     "offset_s": 6.386,
+     "ts": "2026-10-16T10:01:42.558Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "query_prometheus",
+     "detail": "Prometheus MCP",
+     "dur_s": 0.062,
+     "failed": false,
+     "offset_s": 6.445,
+     "ts": "2026-10-16T10:01:42.616Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "pods_list_in_namespace",
+     "detail": "OpenShift MCP",
+     "dur_s": 0.037,
+     "failed": false,
+     "offset_s": 6.508,
+     "ts": "2026-10-16T10:01:42.679Z"
+    },
+    {
+     "lane": "llm",
+     "kind": "llm",
+     "title": "LLM turn 3",
+     "dur_s": 17.61,
+     "routed_to": "local-fast",
+     "decided_by": "namespace",
+     "reason": "namespace: restricted payments (found by scan) -> LOCAL",
+     "model": "qwen38-local",
+     "tokens_in": 11210,
+     "tokens_out": 1681,
+     "trace_id": "ea45e8d9ee6c4bee54b6d0cb44687dcc",
+     "offset_s": 6.602,
+     "ts": "2026-10-16T10:01:42.774Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "pods_log",
+     "detail": "OpenShift MCP",
+     "dur_s": 0.059,
+     "failed": false,
+     "offset_s": 24.213,
+     "ts": "2026-10-16T10:02:00.384Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "query_prometheus_range",
+     "detail": "Prometheus MCP",
+     "dur_s": 0.061,
+     "failed": false,
+     "offset_s": 24.272,
+     "ts": "2026-10-16T10:02:00.444Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "query_prometheus",
+     "detail": "Prometheus MCP",
+     "dur_s": 0.056,
+     "failed": false,
+     "offset_s": 24.334,
+     "ts": "2026-10-16T10:02:00.505Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "query_prometheus",
+     "detail": "Prometheus MCP",
+     "dur_s": 0.055,
+     "failed": false,
+     "offset_s": 24.39,
+     "ts": "2026-10-16T10:02:00.562Z"
+    },
+    {
+     "lane": "llm",
+     "kind": "llm",
+     "title": "LLM turn 4",
+     "dur_s": 19.36,
+     "routed_to": "local-fast",
+     "decided_by": "namespace",
+     "reason": "namespace: restricted payments (found by scan) -> LOCAL",
+     "model": "qwen38-local",
+     "tokens_in": 20551,
+     "tokens_out": 1834,
+     "trace_id": "c741f46f6ebb8eee53c8c1a75bc2f9a0",
+     "offset_s": 24.502,
+     "ts": "2026-10-16T10:02:00.674Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "create_incident",
+     "detail": "Ticketing System MCP",
+     "dur_s": 0.057,
+     "failed": false,
+     "offset_s": 43.865,
+     "ts": "2026-10-16T10:02:20.037Z"
+    },
+    {
+     "lane": "ticket",
+     "kind": "incident",
+     "title": "Incident INC0000009 opened",
+     "detail": "priority 3",
+     "offset_s": 43.923,
+     "ts": "2026-10-16T10:02:20.094Z"
+    },
+    {
+     "lane": "llm",
+     "kind": "llm",
+     "title": "LLM turn 5",
+     "dur_s": 7.18,
+     "routed_to": "local-fast",
+     "decided_by": "namespace",
+     "reason": "namespace: restricted payments (found by scan) -> LOCAL",
+     "model": "qwen38-local",
+     "tokens_in": 22876,
+     "tokens_out": 695,
+     "trace_id": "d61e9cc079e5a396ba6f34065fa91e99",
+     "offset_s": 43.977,
+     "ts": "2026-10-16T10:02:20.149Z"
+    },
+    {
+     "lane": "agent",
+     "kind": "run_end",
+     "title": "The agent writes its report",
+     "detail": "report of 3804 characters",
+     "offset_s": 51.212,
+     "ts": "2026-10-16T10:02:27.384Z"
+    }
+   ]
   },
   {
-   "lane": "alert",
-   "kind": "trigger",
-   "title": "The translator calls the agent of the namespace",
-   "detail": "POST /trigger -> 202",
-   "offset_s": 0.052,
-   "ts": "2026-10-15T05:39:52.323Z"
-  },
-  {
-   "lane": "agent",
-   "kind": "run_start",
-   "title": "The agent starts the investigation",
-   "offset_s": 0.05,
-   "ts": "2026-10-15T05:39:52.321Z"
-  },
-  {
-   "lane": "llm",
-   "kind": "llm",
-   "title": "LLM turn 1",
-   "dur_s": 7.39,
-   "routed_to": "local-fast",
-   "decided_by": "namespace",
-   "reason": "namespace: restricted payments (found by scan) -> LOCAL",
-   "model": "qwen38-local",
-   "tokens_in": 8047,
-   "tokens_out": 258,
-   "trace_id": "430a0d5f0e92122b0a96abf3e51e8195",
-   "offset_s": 0.522,
-   "ts": "2026-10-15T05:39:52.793Z"
-  },
-  {
-   "lane": "tools",
-   "kind": "tool",
-   "title": "pods_list_in_namespace",
-   "detail": "OpenShift MCP",
-   "dur_s": 0.04,
-   "offset_s": 7.92,
-   "ts": "2026-10-15T05:40:00.191Z"
-  },
-  {
-   "lane": "tools",
-   "kind": "tool",
-   "title": "query_prometheus",
-   "detail": "Prometheus MCP",
-   "dur_s": 0.054,
-   "offset_s": 7.961,
-   "ts": "2026-10-15T05:40:00.232Z"
-  },
-  {
-   "lane": "tools",
-   "kind": "tool",
-   "title": "query_prometheus",
-   "detail": "Prometheus MCP",
-   "dur_s": 0.056,
-   "offset_s": 8.016,
-   "ts": "2026-10-15T05:40:00.286Z"
-  },
-  {
-   "lane": "llm",
-   "kind": "llm",
-   "title": "LLM turn 2",
-   "dur_s": 4.33,
-   "routed_to": "local-fast",
-   "decided_by": "namespace",
-   "reason": "namespace: restricted payments (found by scan) -> LOCAL",
-   "model": "qwen38-local",
-   "tokens_in": 9105,
-   "tokens_out": 434,
-   "trace_id": "10c140523f1881ef9f125c7e8d6dba7d",
-   "offset_s": 8.126,
-   "ts": "2026-10-15T05:40:00.397Z"
-  },
-  {
-   "lane": "tools",
-   "kind": "tool",
-   "title": "pods_log",
-   "detail": "OpenShift MCP",
-   "dur_s": 0.058,
-   "offset_s": 12.463,
-   "ts": "2026-10-15T05:40:04.734Z"
-  },
-  {
-   "lane": "tools",
-   "kind": "tool",
-   "title": "query_prometheus",
-   "detail": "Prometheus MCP",
-   "dur_s": 0.06,
-   "offset_s": 12.522,
-   "ts": "2026-10-15T05:40:04.793Z"
-  },
-  {
-   "lane": "tools",
-   "kind": "tool",
-   "title": "query_prometheus",
-   "detail": "Prometheus MCP",
-   "dur_s": 0.075,
-   "offset_s": 12.582,
-   "ts": "2026-10-15T05:40:04.853Z"
-  },
-  {
-   "lane": "llm",
-   "kind": "llm",
-   "title": "LLM turn 3",
-   "dur_s": 17.25,
-   "routed_to": "local-fast",
-   "decided_by": "namespace",
-   "reason": "namespace: restricted payments (found by scan) -> LOCAL",
-   "model": "qwen38-local",
-   "tokens_in": 18623,
-   "tokens_out": 1392,
-   "trace_id": "f30bd918fce89601d22e7a765731f402",
-   "offset_s": 12.708,
-   "ts": "2026-10-15T05:40:04.979Z"
-  },
-  {
-   "lane": "tools",
-   "kind": "tool",
-   "title": "query_prometheus",
-   "detail": "Prometheus MCP",
-   "dur_s": 0.195,
-   "offset_s": 29.966,
-   "ts": "2026-10-15T05:40:22.237Z"
-  },
-  {
-   "lane": "tools",
-   "kind": "tool",
-   "title": "query_prometheus_range",
-   "detail": "Prometheus MCP",
-   "dur_s": 0.057,
-   "offset_s": 30.162,
-   "ts": "2026-10-15T05:40:22.432Z"
-  },
-  {
-   "lane": "llm",
-   "kind": "llm",
-   "title": "LLM turn 4",
-   "dur_s": 13.4,
-   "routed_to": "local-fast",
-   "decided_by": "namespace",
-   "reason": "namespace: restricted payments (found by scan) -> LOCAL",
-   "model": "qwen38-local",
-   "tokens_in": 19078,
-   "tokens_out": 1265,
-   "trace_id": "38ef8302aee3abfeb48e0085b829dbd9",
-   "offset_s": 30.271,
-   "ts": "2026-10-15T05:40:22.542Z"
-  },
-  {
-   "lane": "tools",
-   "kind": "tool",
-   "title": "create_incident",
-   "detail": "Ticketing System MCP",
-   "dur_s": 0.051,
-   "offset_s": 43.679,
-   "ts": "2026-10-15T05:40:35.949Z"
-  },
-  {
-   "lane": "ticket",
-   "kind": "incident",
-   "title": "Incident INC0000002 opened",
-   "detail": "priority 3",
-   "offset_s": 43.729,
-   "ts": "2026-10-15T05:40:36.000Z"
-  },
-  {
-   "lane": "llm",
-   "kind": "llm",
-   "title": "LLM turn 5",
-   "dur_s": 6.71,
-   "routed_to": "local-fast",
-   "decided_by": "namespace",
-   "reason": "namespace: restricted payments (found by scan) -> LOCAL",
-   "model": "qwen38-local",
-   "tokens_in": 20814,
-   "tokens_out": 634,
-   "trace_id": "2cd4aae52c4b93711d58f07a8b73229e",
-   "offset_s": 43.782,
-   "ts": "2026-10-15T05:40:36.053Z"
-  },
-  {
-   "lane": "agent",
-   "kind": "run_end",
-   "title": "The agent writes its report",
-   "detail": "report of 3127 characters",
-   "offset_s": 50.535,
-   "ts": "2026-10-15T05:40:42.806Z"
+   "namespace": "rh-reserve",
+   "data_class": "public",
+   "alert": {
+    "name": "QuarkusBuggyAppHighErrorRate",
+    "rule": "the share of HTTP 5xx answers of rh-reserve-buggy-app is above 10% for 5 minutes"
+   },
+   "incident": {
+    "number": "INC0000008",
+    "priority": 2,
+    "opened_at": "2026-10-16T09:57:57Z"
+   },
+   "events": [
+    {
+     "lane": "alert",
+     "kind": "webhook",
+     "title": "Alertmanager webhook reaches the translator",
+     "detail": "1 alert(s), namespace rh-reserve",
+     "offset_s": 0.0,
+     "ts": "2026-10-16T09:57:31.154Z"
+    },
+    {
+     "lane": "alert",
+     "kind": "trigger",
+     "title": "The translator calls the agent of the namespace",
+     "detail": "POST /trigger -> 202",
+     "offset_s": 0.026,
+     "ts": "2026-10-16T09:57:31.180Z"
+    },
+    {
+     "lane": "agent",
+     "kind": "run_start",
+     "title": "The agent starts the investigation",
+     "offset_s": 0.025,
+     "ts": "2026-10-16T09:57:31.178Z"
+    },
+    {
+     "lane": "llm",
+     "kind": "llm",
+     "title": "LLM turn 1",
+     "dur_s": 5.49,
+     "routed_to": "sota-smart",
+     "decided_by": "all-sota",
+     "reason": "privacy: score 0.00 (systemone/biz@1.00(ignored):0.00) < 0.50[team=_default] -> SOTA",
+     "model": "gemini-2.5-pro",
+     "tokens_in": 5982,
+     "tokens_out": 440,
+     "trace_id": "adf319d0d60cb3154dfadafb71b6c9a9",
+     "offset_s": 0.296,
+     "ts": "2026-10-16T09:57:31.450Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "pods_list_in_namespace",
+     "detail": "OpenShift MCP",
+     "dur_s": 0.044,
+     "failed": false,
+     "offset_s": 5.791,
+     "ts": "2026-10-16T09:57:36.945Z"
+    },
+    {
+     "lane": "llm",
+     "kind": "llm",
+     "title": "LLM turn 2",
+     "dur_s": 4.97,
+     "routed_to": "sota-smart",
+     "decided_by": "all-sota",
+     "reason": "privacy: score 0.00 (systemone/biz@1.00(ignored):0.00) < 0.50[team=_default] -> SOTA",
+     "model": "gemini-2.5-pro",
+     "tokens_in": 6324,
+     "tokens_out": 470,
+     "trace_id": "698f797140061461cc3045bc8ecf5382",
+     "offset_s": 5.886,
+     "ts": "2026-10-16T09:57:37.040Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "query_prometheus",
+     "detail": "Prometheus MCP",
+     "dur_s": 0.077,
+     "failed": false,
+     "offset_s": 10.862,
+     "ts": "2026-10-16T09:57:42.016Z"
+    },
+    {
+     "lane": "llm",
+     "kind": "llm",
+     "title": "LLM turn 3",
+     "dur_s": 7.73,
+     "routed_to": "sota-smart",
+     "decided_by": "all-sota",
+     "reason": "privacy: score 0.00 (systemone/biz@1.00(ignored):0.00) < 0.50[team=_default] -> SOTA",
+     "model": "gemini-2.5-pro",
+     "tokens_in": 6704,
+     "tokens_out": 687,
+     "trace_id": "1f1a72de0c137203b8183cd37ac1e6ac",
+     "offset_s": 10.99,
+     "ts": "2026-10-16T09:57:42.144Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "query_prometheus",
+     "detail": "Prometheus MCP",
+     "dur_s": 0.073,
+     "failed": false,
+     "offset_s": 18.721,
+     "ts": "2026-10-16T09:57:49.875Z"
+    },
+    {
+     "lane": "llm",
+     "kind": "llm",
+     "title": "LLM turn 4",
+     "dur_s": 7.54,
+     "routed_to": "sota-smart",
+     "decided_by": "all-sota",
+     "reason": "privacy: score 0.00 (systemone/biz@1.00(ignored):0.00) < 0.50[team=_default] -> SOTA",
+     "model": "gemini-2.5-pro",
+     "tokens_in": 7985,
+     "tokens_out": 750,
+     "trace_id": "cd1353de3223feb9b453632d58c7b7ea",
+     "offset_s": 18.848,
+     "ts": "2026-10-16T09:57:50.002Z"
+    },
+    {
+     "lane": "tools",
+     "kind": "tool",
+     "title": "create_incident",
+     "detail": "Ticketing System MCP",
+     "dur_s": 0.056,
+     "failed": false,
+     "offset_s": 26.395,
+     "ts": "2026-10-16T09:57:57.549Z"
+    },
+    {
+     "lane": "ticket",
+     "kind": "incident",
+     "title": "Incident INC0000008 opened",
+     "detail": "priority 2",
+     "offset_s": 26.451,
+     "ts": "2026-10-16T09:57:57.605Z"
+    },
+    {
+     "lane": "llm",
+     "kind": "llm",
+     "title": "LLM turn 5",
+     "dur_s": 12.69,
+     "routed_to": "sota-smart",
+     "decided_by": "all-sota",
+     "reason": "privacy: score 0.00 (systemone/biz@1.00(ignored):0.00) < 0.50[team=_default] -> SOTA",
+     "model": "gemini-2.5-pro",
+     "tokens_in": 8551,
+     "tokens_out": 1430,
+     "trace_id": "2febede098fb12058b57184155dd5ae6",
+     "offset_s": 26.504,
+     "ts": "2026-10-16T09:57:57.658Z"
+    },
+    {
+     "lane": "agent",
+     "kind": "run_end",
+     "title": "The agent writes its report",
+     "detail": "report of 1407 characters",
+     "offset_s": 39.243,
+     "ts": "2026-10-16T09:58:10.396Z"
+    }
+   ]
   }
  ],
  "notes": [
-  "The alert was already firing when the cluster finished its install, so T0 is the webhook, not the alert.",
-  "Times come from the translator and agent logs, the router traces (Tempo) and the incident.",
-  "Prompts, model answers and the text of the incident were removed; only its number and priority are kept."
+  "T0 is the Alertmanager webhook, not the start of the alert: the alert was already firing, and Alertmanager sends it again while it lasts.",
+  "Times come from the translator and agent logs, the router traces (Tempo) and the incidents.",
+  "Prompts, model answers and the text of the incidents were removed; only their number and priority are kept."
  ]
 };

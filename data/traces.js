@@ -2,137 +2,137 @@
 window.DEMO = window.DEMO || {};
 window.DEMO.traces = {
  "schema": 1,
- "captured_at": "2026-10-15",
+ "captured_at": "2026-10-16",
  "router_version": "v0.12.1",
  "cluster": "redacted",
  "traces": [
   {
    "id": "sota",
    "label": "Clean request to SOTA",
-   "trace_id": "02fee2bfd23d0aa3f519e74bd0f35ce0",
-   "started": "2026-10-15T07:39:05.180Z",
-   "duration_ms": 2195.0,
+   "trace_id": "682b3ba5fddbc241db118f92e3239858",
+   "started": "2026-10-16T09:18:35.193Z",
+   "duration_ms": 1984.9,
    "spans": [
     {
-     "id": "s0",
+     "id": "s3",
      "parent": "",
      "name": "Received Proxy Server Request",
      "service": "litellm-router",
      "start_ms": 0.0,
-     "dur_ms": 2194.59,
+     "dur_ms": 1984.4,
      "attrs": {
       "http.route": "/v1/chat/completions",
       "http.response.status_code": 200
      }
     },
     {
-     "id": "s3",
-     "parent": "s0",
+     "id": "s8",
+     "parent": "s3",
      "name": "proxy_pre_call",
      "service": "litellm-router",
-     "start_ms": 1.31,
+     "start_ms": 1.34,
      "dur_ms": 0.03,
      "attrs": {
       "call_type": "add_litellm_data_to_request"
      }
     },
     {
-     "id": "s1",
-     "parent": "s0",
+     "id": "s10",
+     "parent": "s3",
      "name": "proxy_pre_call",
      "service": "litellm-router",
-     "start_ms": 1.82,
-     "dur_ms": 628.03,
+     "start_ms": 1.88,
+     "dur_ms": 156.54,
      "attrs": {
       "call_type": "ChainRouter"
      }
     },
     {
-     "id": "s2",
-     "parent": "s0",
+     "id": "s4",
+     "parent": "s3",
      "name": "router.chain",
      "service": "litellm-router",
-     "start_ms": 1.92,
-     "dur_ms": 627.85,
+     "start_ms": 2.0,
+     "dur_ms": 156.34,
      "attrs": {
       "route.requested": "auto",
       "route.target": "sota-smart",
       "route.decided_by": "all-sota",
       "route.team": "research",
-      "route.reason": "privacy: score 0.00 (systemone/biz@0.80(ignored):0.00) < 0.70[team=research] -> SOTA"
+      "route.reason": "privacy: score 0.00 (systemone/biz@0.94(ignored):0.00) < 0.70[team=research] -> SOTA"
      }
     },
     {
-     "id": "s7",
-     "parent": "s2",
+     "id": "s0",
+     "parent": "s4",
      "name": "gate.namespace",
      "service": "litellm-router",
-     "start_ms": 1.97,
-     "dur_ms": 0.06,
+     "start_ms": 2.05,
+     "dur_ms": 0.08,
      "attrs": {
       "gate.verdict": "pass",
       "gate.reason": "namespace: no restricted namespace"
      }
     },
     {
-     "id": "s9",
-     "parent": "s2",
+     "id": "s1",
+     "parent": "s4",
      "name": "gate.efficiency",
      "service": "litellm-router",
-     "start_ms": 2.09,
-     "dur_ms": 0.02,
+     "start_ms": 2.19,
+     "dur_ms": 0.03,
      "attrs": {
       "gate.verdict": "sota",
       "gate.reason": "efficiency: long/complex (keyword 'analyze')"
      }
     },
     {
-     "id": "s4",
-     "parent": "s2",
+     "id": "s7",
+     "parent": "s4",
      "name": "gate.privacy",
      "service": "litellm-router",
-     "start_ms": 2.15,
-     "dur_ms": 627.54,
+     "start_ms": 2.27,
+     "dur_ms": 155.99,
      "attrs": {
       "gate.verdict": "sota",
-      "gate.reason": "privacy: score 0.00 (systemone/biz@0.80(ignored):0.00) < 0.70[team=research]",
+      "gate.reason": "privacy: score 0.00 (systemone/biz@0.94(ignored):0.00) < 0.70[team=research]",
       "privacy.score": 0,
       "privacy.threshold": 0.7,
       "privacy.team_key": "research",
-      "privacy.signals": "systemone/biz@0.80(ignored):0.00",
+      "privacy.signals": "systemone/biz@0.94(ignored):0.00",
       "classifier.backend": "systemone",
       "classifier.fallback": false
      }
     },
     {
-     "id": "s8",
-     "parent": "s0",
+     "id": "s11",
+     "parent": "s3",
      "name": "router",
      "service": "litellm-router",
-     "start_ms": 630.27,
-     "dur_ms": 1564.78,
+     "start_ms": 158.99,
+     "dur_ms": 1825.91,
      "attrs": {
       "call_type": "acompletion"
      }
     },
     {
-     "id": "s11",
-     "parent": "s0",
+     "id": "s9",
+     "parent": "s3",
      "name": "router",
      "service": "litellm-router",
-     "start_ms": 630.35,
-     "dur_ms": 0.13,
+     "start_ms": 159.15,
+     "dur_ms": 0.18,
      "attrs": {
       "call_type": "async_get_available_deployment"
      }
     },
     {
-     "id": "s10",
-     "parent": "s0",
+     "id": "s6",
+     "parent": "s3",
      "name": "litellm_request",
      "service": "litellm-router",
-     "start_ms": 630.59,
-     "dur_ms": 1564.01,
+     "start_ms": 159.47,
+     "dur_ms": 1824.94,
      "attrs": {
       "litellm.model_group": "sota-smart",
       "gen_ai.request.model": "gemini-2.5-pro",
@@ -142,23 +142,23 @@ window.DEMO.traces = {
      }
     },
     {
-     "id": "s6",
-     "parent": "s10",
+     "id": "s5",
+     "parent": "s6",
      "name": "raw_gen_ai_request",
      "service": "litellm-router",
-     "start_ms": 630.59,
-     "dur_ms": 1564.01,
+     "start_ms": 159.47,
+     "dur_ms": 1824.94,
      "attrs": {
       "llm.openai.model": "gemini-2.5-pro"
      }
     },
     {
-     "id": "s5",
-     "parent": "s0",
+     "id": "s2",
+     "parent": "s3",
      "name": "self",
      "service": "litellm-router",
-     "start_ms": 632.55,
-     "dur_ms": 1561.69,
+     "start_ms": 161.31,
+     "dur_ms": 1822.59,
      "attrs": {
       "call_type": "make_openai_chat_completion_request <- track_llm_api_timing"
      }
@@ -168,40 +168,40 @@ window.DEMO.traces = {
   {
    "id": "privacy",
    "label": "Personal data stays local",
-   "trace_id": "963834623ebbee2c1f9bdff88b59a023",
-   "started": "2026-10-15T05:43:31.530Z",
-   "duration_ms": 1616.3,
+   "trace_id": "6cfadb0fcbd118c371b119384572c6ca",
+   "started": "2026-10-16T09:17:57.147Z",
+   "duration_ms": 1555.6,
    "spans": [
     {
-     "id": "s7",
+     "id": "s8",
      "parent": "",
      "name": "Received Proxy Server Request",
      "service": "litellm-router",
      "start_ms": 0.0,
-     "dur_ms": 1615.65,
+     "dur_ms": 1554.94,
      "attrs": {
       "http.route": "/v1/chat/completions",
       "http.response.status_code": 200
      }
     },
     {
-     "id": "s0",
-     "parent": "s7",
+     "id": "s3",
+     "parent": "s8",
      "name": "proxy_pre_call",
      "service": "litellm-router",
-     "start_ms": 1.36,
-     "dur_ms": 0.06,
+     "start_ms": 1.3,
+     "dur_ms": 0.03,
      "attrs": {
       "call_type": "add_litellm_data_to_request"
      }
     },
     {
-     "id": "s3",
-     "parent": "s7",
+     "id": "s0",
+     "parent": "s8",
      "name": "router.chain",
      "service": "litellm-router",
-     "start_ms": 2.05,
-     "dur_ms": 0.66,
+     "start_ms": 1.94,
+     "dur_ms": 0.56,
      "attrs": {
       "route.requested": "auto",
       "route.target": "local-fast",
@@ -211,23 +211,23 @@ window.DEMO.traces = {
      }
     },
     {
-     "id": "s8",
-     "parent": "s3",
+     "id": "s5",
+     "parent": "s0",
      "name": "gate.namespace",
      "service": "litellm-router",
-     "start_ms": 2.09,
-     "dur_ms": 0.07,
+     "start_ms": 1.99,
+     "dur_ms": 0.06,
      "attrs": {
       "gate.verdict": "pass",
       "gate.reason": "namespace: no restricted namespace"
      }
     },
     {
-     "id": "s6",
-     "parent": "s3",
+     "id": "s9",
+     "parent": "s0",
      "name": "gate.efficiency",
      "service": "litellm-router",
-     "start_ms": 2.22,
+     "start_ms": 2.11,
      "dur_ms": 0.03,
      "attrs": {
       "gate.verdict": "sota",
@@ -235,12 +235,12 @@ window.DEMO.traces = {
      }
     },
     {
-     "id": "s2",
-     "parent": "s3",
+     "id": "s10",
+     "parent": "s0",
      "name": "gate.privacy",
      "service": "litellm-router",
-     "start_ms": 2.3,
-     "dur_ms": 0.37,
+     "start_ms": 2.19,
+     "dur_ms": 0.27,
      "attrs": {
       "gate.verdict": "local",
       "gate.reason": "privacy: score 0.98 (codice_fiscale:0.85, iban:0.80, italian_mobile:0.35) >= 0.70[team=research]",
@@ -251,34 +251,34 @@ window.DEMO.traces = {
      }
     },
     {
-     "id": "s1",
-     "parent": "s7",
+     "id": "s7",
+     "parent": "s8",
      "name": "router",
      "service": "litellm-router",
-     "start_ms": 3.11,
-     "dur_ms": 1613.22,
+     "start_ms": 2.87,
+     "dur_ms": 1552.77,
      "attrs": {
       "call_type": "acompletion"
      }
     },
     {
-     "id": "s9",
-     "parent": "s7",
+     "id": "s6",
+     "parent": "s8",
      "name": "router",
      "service": "litellm-router",
-     "start_ms": 3.22,
-     "dur_ms": 0.16,
+     "start_ms": 2.99,
+     "dur_ms": 0.12,
      "attrs": {
       "call_type": "async_get_available_deployment"
      }
     },
     {
-     "id": "s5",
-     "parent": "s7",
+     "id": "s1",
+     "parent": "s8",
      "name": "litellm_request",
      "service": "litellm-router",
-     "start_ms": 3.56,
-     "dur_ms": 1612.09,
+     "start_ms": 3.22,
+     "dur_ms": 1551.72,
      "attrs": {
       "litellm.model_group": "local-fast",
       "gen_ai.request.model": "qwen38-local",
@@ -288,23 +288,23 @@ window.DEMO.traces = {
      }
     },
     {
-     "id": "s4",
-     "parent": "s5",
+     "id": "s2",
+     "parent": "s1",
      "name": "raw_gen_ai_request",
      "service": "litellm-router",
-     "start_ms": 3.56,
-     "dur_ms": 1612.09,
+     "start_ms": 3.22,
+     "dur_ms": 1551.72,
      "attrs": {
       "llm.openai.model": "qwen38-local"
      }
     },
     {
-     "id": "s10",
-     "parent": "s7",
+     "id": "s4",
+     "parent": "s8",
      "name": "self",
      "service": "litellm-router",
-     "start_ms": 5.12,
-     "dur_ms": 1610.12,
+     "start_ms": 4.57,
+     "dur_ms": 1549.99,
      "attrs": {
       "call_type": "make_openai_chat_completion_request <- track_llm_api_timing"
      }
@@ -314,54 +314,54 @@ window.DEMO.traces = {
   {
    "id": "namespace",
    "label": "Restricted namespace",
-   "trace_id": "10c140523f1881ef9f125c7e8d6dba7d",
-   "started": "2026-10-15T05:40:00.394Z",
-   "duration_ms": 4333.9,
+   "trace_id": "ea45e8d9ee6c4bee54b6d0cb44687dcc",
+   "started": "2026-10-16T10:01:42.770Z",
+   "duration_ms": 17608.3,
    "spans": [
     {
-     "id": "s1",
+     "id": "s0",
      "parent": "",
      "name": "Received Proxy Server Request",
      "service": "litellm-router",
      "start_ms": 0.0,
-     "dur_ms": 4333.88,
+     "dur_ms": 17608.35,
      "attrs": {
       "http.route": "/v1/chat/completions",
       "http.response.status_code": 200
      }
     },
     {
-     "id": "s8",
-     "parent": "s1",
+     "id": "s5",
+     "parent": "s0",
      "name": "litellm_request",
      "service": "litellm-router",
-     "start_ms": 1.59,
-     "dur_ms": 4332.3,
+     "start_ms": 2.09,
+     "dur_ms": 17606.25,
      "attrs": {
       "litellm.model_group": "local-fast",
       "gen_ai.request.model": "qwen38-local",
-      "gen_ai.usage.input_tokens": 9105,
-      "gen_ai.usage.output_tokens": 434,
+      "gen_ai.usage.input_tokens": 11210,
+      "gen_ai.usage.output_tokens": 1681,
       "llm.is_streaming": "True"
      }
     },
     {
      "id": "s7",
-     "parent": "s8",
+     "parent": "s5",
      "name": "raw_gen_ai_request",
      "service": "litellm-router",
-     "start_ms": 1.59,
-     "dur_ms": 4332.3,
+     "start_ms": 2.09,
+     "dur_ms": 17606.25,
      "attrs": {
       "llm.openai.model": "qwen38-local"
      }
     },
     {
-     "id": "s6",
-     "parent": "s1",
+     "id": "s8",
+     "parent": "s0",
      "name": "proxy_pre_call",
      "service": "litellm-router",
-     "start_ms": 1.95,
+     "start_ms": 2.39,
      "dur_ms": 0.03,
      "attrs": {
       "call_type": "add_litellm_data_to_request"
@@ -369,11 +369,11 @@ window.DEMO.traces = {
     },
     {
      "id": "s2",
-     "parent": "s1",
+     "parent": "s0",
      "name": "router.chain",
      "service": "litellm-router",
-     "start_ms": 2.65,
-     "dur_ms": 2.31,
+     "start_ms": 3.09,
+     "dur_ms": 4.23,
      "attrs": {
       "route.requested": "auto",
       "route.target": "local-fast",
@@ -383,46 +383,46 @@ window.DEMO.traces = {
      }
     },
     {
-     "id": "s0",
+     "id": "s3",
      "parent": "s2",
      "name": "gate.namespace",
      "service": "litellm-router",
-     "start_ms": 2.69,
-     "dur_ms": 2.04,
+     "start_ms": 3.14,
+     "dur_ms": 3.92,
      "attrs": {
       "gate.verdict": "local",
       "gate.reason": "namespace: restricted payments (found by scan)"
      }
     },
     {
-     "id": "s3",
-     "parent": "s1",
+     "id": "s4",
+     "parent": "s0",
      "name": "router",
      "service": "litellm-router",
-     "start_ms": 5.45,
-     "dur_ms": 23.35,
+     "start_ms": 7.81,
+     "dur_ms": 34.69,
      "attrs": {
       "call_type": "acompletion"
      }
     },
     {
-     "id": "s4",
-     "parent": "s1",
+     "id": "s6",
+     "parent": "s0",
      "name": "router",
      "service": "litellm-router",
-     "start_ms": 5.55,
-     "dur_ms": 0.16,
+     "start_ms": 7.89,
+     "dur_ms": 0.14,
      "attrs": {
       "call_type": "async_get_available_deployment"
      }
     },
     {
-     "id": "s5",
-     "parent": "s1",
+     "id": "s1",
+     "parent": "s0",
      "name": "self",
      "service": "litellm-router",
-     "start_ms": 7.82,
-     "dur_ms": 20.17,
+     "start_ms": 10.14,
+     "dur_ms": 31.14,
      "attrs": {
       "call_type": "make_openai_chat_completion_request <- track_llm_api_timing"
      }
