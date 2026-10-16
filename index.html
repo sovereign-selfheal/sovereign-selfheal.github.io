@@ -169,6 +169,7 @@
             <p>The alert reaches the <b>ogx-alert-translator</b>, which calls the agent of the alert's namespace. The agent works in turns: the model asks for a tool call, the tool answers, and the model decides the next step.</p>
             <p>The agent uses three MCP servers, all in the cluster: <b>Prometheus</b> for metrics, <b>OpenShift</b> for pods and logs (read-only), and the <b>ticketing system</b>. At the end it opens an incident with its diagnosis.</p>
             <p>Each LLM turn is a normal request to the router, like the requests of any other client: same gates, same logs, same traces.</p>
+            <p>A hollow circle is a tool call that failed. The agent sees the error and calls the tool again.</p>
           </div>
         </div>
       </div>
