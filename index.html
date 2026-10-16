@@ -174,6 +174,16 @@
         </div>
       </div>
       <p class="datacard" id="replay-meta"></p>
+      <div class="gallery">
+        <figure>
+          <a href="img/screens/incidents.png"><img src="img/screens/incidents.png" alt="Ticketing system: 33 new incidents opened by the triage agents, with number, priority, caller and time; the descriptions are removed" width="1126" height="818" loading="lazy"></a>
+          <figcaption>The incidents that the agents opened. The model writes the descriptions, so they are removed.</figcaption>
+        </figure>
+        <figure>
+          <a href="img/screens/agent-ui.png"><img src="img/screens/agent-ui.png" alt="Web page of a triage agent: the agent calls the Ticketing System, OpenShift and Prometheus MCP servers; the text of the model is removed" width="1984" height="826" loading="lazy"></a>
+          <figcaption>You can also start an agent from its web page and follow each MCP tool call. The text of the model is removed.</figcaption>
+        </figure>
+      </div>
     </div>
   </section>
 
@@ -188,6 +198,12 @@
         <div class="attrs" id="wf-attrs"></div>
       </div>
       <p class="datacard" id="wf-meta"></p>
+      <div class="gallery one">
+        <figure>
+          <a href="img/screens/tempo-trace.png"><img src="img/screens/tempo-trace.png" alt="Trace in the OpenShift console: router.chain with the spans of the namespace, efficiency and privacy gates; its attributes say that the privacy gate decided, with score 0.98 from a codice fiscale, an IBAN and an Italian mobile number, and that the request went to the local model" width="1984" height="697" loading="lazy"></a>
+          <figcaption>A trace in the OpenShift console (Observe → Traces). The privacy gate found a codice fiscale and an IBAN, so the request stayed local.</figcaption>
+        </figure>
+      </div>
     </div>
   </section>
 
@@ -203,6 +219,16 @@
         </div>
         <div class="map-list card" id="map-list"></div>
       </div>
+      <div class="gallery">
+        <figure>
+          <a href="img/screens/argocd-apps.png"><img src="img/screens/argocd-apps.png" alt="Argo CD: the application sovereign-selfheal, Synced and Healthy, with its 19 child applications" width="1230" height="1330" loading="lazy"></a>
+          <figcaption>Argo CD installs everything from the gitops repository: one app of apps with 19 applications.</figcaption>
+        </figure>
+        <figure>
+          <a href="img/screens/rhoai-models.png"><img src="img/screens/rhoai-models.png" alt="OpenShift AI model deployments in the project local-models: the decision model DiffusionGemma 26B-A4B FP8 on an NVIDIA L40S (g6e.2xlarge) and Qwen3.8 27B NVFP4 on an NVIDIA RTX PRO 6000 (g7e.2xlarge), both Ready" width="1986" height="522" loading="lazy"></a>
+          <figcaption>OpenShift AI serves the two local models, each on its own GPU with a hardware profile.</figcaption>
+        </figure>
+      </div>
     </div>
   </section>
 
@@ -213,8 +239,20 @@
       <p class="intro">Perses dashboards in the console show where the requests went, which gate decided and how busy the GPUs are. A live page shows every decision as it happens.</p>
       <div class="gallery">
         <figure>
-          <img src="img/screens/perses-routing-decisions.png" alt="Perses dashboard Sovereign router - routing decisions: requests kept local, sent to SOTA, stopped by the privacy gate, and a pie chart of the gate that decided" width="1819" height="925" loading="lazy">
+          <a href="img/screens/perses-at-a-glance.png"><img src="img/screens/perses-at-a-glance.png" alt="Perses dashboard Sovereign AI - at a glance, last 6 hours: 61% of the requests kept in the cluster, 2M tokens processed in the cluster, 840K tokens sent to the external model, 79 sensitive requests kept local, 0 requests over the token budget" width="2000" height="995" loading="lazy"></a>
+          <figcaption>At a glance: how much stayed in the cluster, and how much went out.</figcaption>
+        </figure>
+        <figure>
+          <a href="img/screens/perses-routing-decisions.png"><img src="img/screens/perses-routing-decisions.png" alt="Perses dashboard Sovereign router - routing decisions: requests kept local, sent to SOTA, stopped by the privacy gate, and a pie chart of the gate that decided" width="2000" height="872" loading="lazy"></a>
           <figcaption>Routing decisions: what stayed local, what went out, and which gate decided.</figcaption>
+        </figure>
+        <figure>
+          <a href="img/screens/perses-operations.png"><img src="img/screens/perses-operations.png" alt="Perses dashboard Sovereign stack - operations: requests, tokens per second, KV cache and GPU use of the local model, and requests, latency and GPU use of the decision model" width="1990" height="1126" loading="lazy"></a>
+          <figcaption>Operations: the local model and the decision model, each on its own GPU.</figcaption>
+        </figure>
+        <figure>
+          <a href="img/screens/live-page.png"><img src="img/screens/live-page.png" alt="Routing live view: 0 restricted requests sent outside the cluster, a map from the namespaces through the agents and the router gates to the local GPU or the external SOTA model, and the latest decisions" width="1378" height="1272" loading="lazy"></a>
+          <figcaption>The live page shows each decision as it happens. Requests about a restricted namespace never leave the cluster.</figcaption>
         </figure>
       </div>
     </div>
@@ -227,15 +265,15 @@
       <p class="intro">Red Hat MLflow, part of OpenShift AI, can record every investigation of the agent: each LLM turn, each tool call, the tokens and the time. A local judge model can score the diagnosis. This part was tested in a short experiment and is not in the default install yet: read <a href="https://github.com/sovereign-selfheal/gitops/blob/main/docs/mlflow/README.md">the results</a>.</p>
       <div class="gallery">
         <figure>
-          <img src="img/mlflow/14-trace-timeline-full.png" alt="MLflow trace of one investigation: seven LLM turns and the MCP tool calls between them, on a timeline of 48 seconds" width="1853" height="859" loading="lazy">
+          <a href="img/mlflow/14-trace-timeline-full.png"><img src="img/mlflow/14-trace-timeline-full.png" alt="MLflow trace of one investigation: seven LLM turns and the MCP tool calls between them, on a timeline of 48 seconds" width="1853" height="859" loading="lazy"></a>
           <figcaption>One investigation: LLM turns and MCP tool calls on a timeline. Prompts and answers are removed from these images.</figcaption>
         </figure>
         <figure>
-          <img src="img/mlflow/17-judge-rationale.png" alt="MLflow assessments of an investigation by a local judge model: root cause correct, ticket created; the texts are removed" width="1853" height="1033" loading="lazy">
+          <a href="img/mlflow/17-judge-rationale.png"><img src="img/mlflow/17-judge-rationale.png" alt="MLflow assessments of an investigation by a local judge model: root cause correct, ticket created; the texts are removed" width="1853" height="1033" loading="lazy"></a>
           <figcaption>A local judge model scores the diagnosis.</figcaption>
         </figure>
         <figure>
-          <img src="img/mlflow/12-traces-list.png" alt="MLflow list of agent traces with tokens, execution time and assessment averages" width="1824" height="979" loading="lazy">
+          <a href="img/mlflow/12-traces-list.png"><img src="img/mlflow/12-traces-list.png" alt="MLflow list of agent traces with tokens, execution time and assessment averages" width="1824" height="979" loading="lazy"></a>
           <figcaption>All investigations, with tokens, time and scores.</figcaption>
         </figure>
       </div>
