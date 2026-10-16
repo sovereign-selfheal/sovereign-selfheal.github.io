@@ -35,6 +35,14 @@ DESTINATIONS = {
     "sota-smart": {"label": "External SOTA model", "model": "Gemini 2.5 Pro, outside the cluster"},
 }
 
+# Buggy-app instance of each monitored namespace: gitops components/observability/values.yaml,
+# alerts.quarkusBuggyApp.services (one Service per namespace since gitops #52).
+BUGGY_APPS = {
+    "payments": "payments-buggy-app",
+    "rh-reserve": "rh-reserve-buggy-app",
+    "reverse-proxy-app": "reverse-proxy-buggy-app",
+}
+
 # Span attributes that may reach the site, by span name (prefix match for gate.*).
 SPAN_ATTRS = {
     "Received Proxy Server Request": ["http.route", "http.response.status_code"],
@@ -361,7 +369,7 @@ def build_investigation(raw: Path, picks: dict) -> dict:
         "data_class": inv["data_class"],
         "alert": {
             "name": "QuarkusBuggyAppHighErrorRate",
-            "rule": "the share of HTTP 5xx answers of quarkus-buggy-app is above 10% for 5 minutes",
+            "rule": f"the share of HTTP 5xx answers of {BUGGY_APPS.get(ns, 'the buggy app')} is above 10% for 5 minutes",
         },
         "incident": {
             "number": inc["number"],
