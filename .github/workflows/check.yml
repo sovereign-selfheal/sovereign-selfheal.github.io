@@ -4,7 +4,7 @@ name: check
 "on":
   pull_request:
   push:
-    branches: [main]
+    branches: [main, linux-day-talk]   # linux-day-talk: the slides of a talk, never merged on main
 
 permissions:
   contents: read
@@ -24,4 +24,4 @@ jobs:
         run: uv run --project tools --locked python tools/check_site.py
 
       - name: Check the JavaScript syntax
-        run: for f in js/*.js data/*.js; do node --check "$f"; done
+        run: for f in js/*.js data/*.js talks/*/*.js; do node --check "$f"; done

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Router simulator · a live slide of the Linux Day Milano 2026 talk</title>
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../css/site.css">
+<link rel="stylesheet" href="live.css">
+</head>
+<body>
+<!-- The markup of the simulator in ../../index.html (section "routing"), without the text around it. -->
+<main class="fit" id="routing">
+  <div class="sim" id="sim">
+    <div class="chips" role="group" aria-label="Example requests"></div>
+    <div class="stage" aria-describedby="sim-meta"></div>
+    <div class="sim-panels">
+      <div class="card" id="sim-request"></div>
+      <div class="card" id="sim-log"></div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="sim-prev" type="button" aria-label="Previous example">&#8592; Previous</button>
+      <button class="btn primary" id="sim-play" type="button" aria-pressed="true">Pause</button>
+      <button class="btn" id="sim-next" type="button" aria-label="Next example">Next &#8594;</button>
+    </div>
+  </div>
+  <p class="datacard" id="sim-meta"></p>
+</main>
+<script src="../../js/common.js"></script>
+<script src="../../data/scenarios.js"></script>
+<script src="../../js/simulator.js"></script>
+<script src="live.js"></script>
+</body>
+</html>

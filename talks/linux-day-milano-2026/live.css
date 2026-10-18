@@ -1,0 +1,7 @@
+/* One widget of the site alone in the frame of a slide (live-*.html), with the site's own CSS and
+   scripts. live.js scales the box to the frame, so the whole widget is on screen without scrolling. */
+html, body { height: 100%; margin: 0; overflow: hidden; }
+.fit { width: 1120px; padding: 16px; transform-origin: 0 0; }
+.controls .hint { display: none; }          /* the keys of the slides are in the help of the deck */
+.replay-grid { grid-template-columns: minmax(0, 1fr); }
+.events { max-height: 300px; }

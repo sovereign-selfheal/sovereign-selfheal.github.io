@@ -53,57 +53,68 @@ class Page(HTMLParser):
                 words = directive.split()
                 if words:
                     self.csp[words[0]] = words[1:]
-        for attr in ("src", "href"):
+        for attr in ("src", "href", "data-src"):  # data-src: a frame that loads when its slide is shown
             if attr in a and a[attr] is not None:
                 self.refs.append((tag, attr, a[attr]))
 
 
 def pages() -> dict[Path, Page]:
+    """The pages of the site and of the talks (talks/<event>/*.html: the slides and their live widgets)."""
     out = {}
-    for f in sorted(ROOT.glob("*.html")):
+    for f in sorted([*ROOT.glob("*.html"), *ROOT.glob("talks/*/*.html")]):
         p = Page()
         p.feed(f.read_text())
         out[f] = p
     return out
 
 
+def resolve(page: Path, ref: str) -> Path:
+    """The local file of a reference: from the site root when it starts with /, else from the page's folder."""
+    base = ROOT if ref.startswith("/") else page.parent
+    return (base / ref.lstrip("/")).resolve()
+
+
 def check_pages() -> None:
     parsed = pages()
     for f, p in parsed.items():
+        name = f.relative_to(ROOT)
         if p.csp is None:
-            fail(f"{f.name}: no Content-Security-Policy")
+            fail(f"{name}: no Content-Security-Policy")
         else:
-            for name, values in CSP_REQUIRED.items():
-                if p.csp.get(name) != values:
-                    fail(f"{f.name}: CSP {name} is {p.csp.get(name)}, expected {values}")
+            for directive, values in CSP_REQUIRED.items():
+                if p.csp.get(directive) != values:
+                    fail(f"{name}: CSP {directive} is {p.csp.get(directive)}, expected {values}")
         for tag, attr, val in p.refs:
             external = re.match(r"^[a-z]+:|^//", val)
             if tag != "a":
-                # Anything the browser loads (script, img, stylesheet, icon) must come from this site,
-                # and must exist.
+                # Anything the browser loads (script, img, stylesheet, icon, frame) must come from this
+                # site, and must exist.
                 if external and not val.startswith("data:"):
-                    fail(f"{f.name}: <{tag} {attr}={val!r}> loads from another site")
+                    fail(f"{name}: <{tag} {attr}={val!r}> loads from another site")
                 elif val.startswith("#"):
                     if val[1:] not in p.ids:
-                        fail(f"{f.name}: <{tag} {attr}={val!r}>: no id {val[1:]!r} in the page")
+                        fail(f"{name}: <{tag} {attr}={val!r}>: no id {val[1:]!r} in the page")
                 elif not external:
-                    path = (ROOT / val.split("#")[0].split("?")[0].lstrip("/")).resolve()
+                    path = resolve(f, val.split("#")[0].split("?")[0])
+                    anchor = val.partition("#")[2]
                     if not path.is_file():
-                        fail(f"{f.name}: <{tag} {attr}={val!r}>: the file does not exist")
+                        fail(f"{name}: <{tag} {attr}={val!r}>: the file does not exist")
+                    elif anchor and path.suffix == ".html" and anchor not in parsed.get(path, Page()).ids:
+                        fail(f"{name}: <{tag} {attr}={val!r}>: no id {anchor!r} in {path.name}")
                 continue
             if external:
                 if not val.startswith(("https://", "mailto:")):
-                    fail(f"{f.name}: link {val!r} is not https")
+                    fail(f"{name}: link {val!r} is not https")
                 continue
             target, _, anchor = val.partition("#")
-            target_file = f if not target else (ROOT / target.lstrip("/")).resolve()
+            target_file = f if not target else resolve(f, target)
             if target and not target_file.exists():
-                fail(f"{f.name}: link {val!r}: {target} does not exist")
+                fail(f"{name}: link {val!r}: {target} does not exist")
                 continue
             if anchor and target_file.suffix == ".html":
                 ids = parsed.get(target_file, Page()).ids
                 if anchor not in ids and anchor != "top":
-                    fail(f"{f.name}: link {val!r}: no id {anchor!r} in {target_file.name}")
+                    fail(f"{name}: link {val!r}: no id {anchor!r} in {target_file.name}")
 
 
 def load_data(f: Path):

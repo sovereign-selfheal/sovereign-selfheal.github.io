@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Investigation replay · a live slide of the Linux Day Milano 2026 talk</title>
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../css/site.css">
+<link rel="stylesheet" href="live.css">
+</head>
+<body>
+<!-- The markup of the replay in ../../index.html (section "agents"), without the text around it. -->
+<main class="fit" id="agents">
+  <div class="card" id="replay">
+    <div class="chips" id="replay-pick" role="group" aria-label="Choose an investigation" style="margin-bottom:12px"></div>
+    <div class="replay-head">
+      <div>
+        <p class="panel-title" style="margin:0">Investigation replay</p>
+        <p id="replay-title" style="margin:4px 0 0;font-weight:600"></p>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <span class="clock" id="replay-clock" aria-live="off">T+0.0 s</span>
+        <button class="btn" id="replay-play" type="button">Play</button>
+      </div>
+    </div>
+    <div class="lanes" id="replay-lanes" style="margin-top:12px"></div>
+    <div class="replay-grid">
+      <ol class="events" id="replay-events" aria-label="Events of the investigation"></ol>
+    </div>
+  </div>
+  <p class="datacard" id="replay-meta"></p>
+</main>
+<script src="../../js/common.js"></script>
+<script src="../../data/investigation.js"></script>
+<script src="../../js/replay.js"></script>
+<script src="live.js"></script>
+</body>
+</html>

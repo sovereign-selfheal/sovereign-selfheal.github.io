@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; font-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Automatic LLM routing on Kubernetes · Linux Day Milano 2026</title>
+<meta name="description" content="Slides of the talk at Linux Day Milano 2026: local or cloud? The gateway decides, request by request.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="deck.css">
+<script src="deck.js" defer></script>
+</head>
+<body>
+
+<svg class="defs" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="arrow-dark" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="arrowhead" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="arrow-local" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="arrowhead arrowhead--local" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="arrow-sota" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path class="arrowhead arrowhead--sota" d="M0 0L10 5L0 10z"/></marker>
+  </defs>
+</svg>
+
+<main class="stage" aria-label="Automatic LLM routing on Kubernetes: slides">
+
+<!-- ===================== Opening ===================== -->
+
+<section class="slide slide--band slide--center" id="cover">
+  <p class="eyebrow">Linux Day Milano 2026 · 24 October</p>
+  <h1 style="width:1400px">Automatic LLM routing on Kubernetes</h1>
+  <p class="cover-sub">Local or cloud? The gateway decides.</p>
+  <div class="stack stack--tight">
+    <p class="name">Amedeo Salvati</p>
+    <p class="muted">Red Hat</p>
+  </div>
+  <aside class="notes" lang="it">[0:30] Buon pomeriggio e grazie di essere qui. Mi chiamo Amedeo Salvati e lavoro in Red Hat. In questo talk voglio rispondere a una domanda pratica. Quando un’applicazione, o un agente AI, chiama un large language model, dove deve andare la richiesta: a un modello sulla nostra GPU o a un modello nel cloud? E chi lo decide? La mia risposta è nel titolo: decide il gateway, richiesta per richiesta. Vi mostro come l’abbiamo costruito su Kubernetes con componenti open source, e poi ve lo faccio vedere in funzione su un cluster vero.</aside>
+</section>
+
+<section class="slide slide--content" id="about">
+  <header class="head"><p class="eyebrow">Opening</p><h2>About me</h2></header>
+  <div class="row row--wide">
+    <div class="stack grow">
+      <p class="name">Amedeo Salvati</p>
+      <p class="muted">Principal Consultant, Red Hat Professional Services</p>
+      <ul>
+        <li>Degree in Statistics</li>
+        <li>Interests: statistics, AI, running and personal finance</li>
+      </ul>
+      <dl class="contacts">
+        <dt>LinkedIn</dt><dd><a href="https://www.linkedin.com/in/amedeos">linkedin.com/in/amedeos</a></dd>
+        <dt>GitHub</dt><dd><a href="https://github.com/amedeos">github.com/amedeos</a></dd>
+        <dt>Blog</dt><dd><a href="https://amedeos.github.io/">amedeos.github.io</a></dd>
+        <dt>Reddit</dt><dd><a href="https://www.reddit.com/user/amedeos">u/amedeos</a></dd>
+      </dl>
+    </div>
+    <div class="card grow">
+      <p class="label">The demo behind this talk</p>
+      <h3>Sovereign Self-Healing</h3>
+      <p>LLM routing and AI SRE triage on Red Hat OpenShift AI (upstream: Open Data Hub)</p>
+      <p>14 public repositories; the routing code is under the Apache License 2.0</p>
+      <p class="strong"><a href="https://github.com/sovereign-selfheal">github.com/sovereign-selfheal</a></p>
+    </div>
+  </div>
+  <footer class="foot"><span>Linux Day Milano 2026</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:00] Due parole su di me. Sono Principal Consultant nei Professional Services di Red Hat. Ho una laurea in Statistica e mi appassionano la statistica, l’AI, la corsa e la finanza personale. Mi trovate su LinkedIn, GitHub, sul mio blog e su Reddit, sempre come amedeos. Questo talk nasce da una demo che abbiamo costruito in modo aperto, come piccolo team. Tutto quello che vedete oggi è pubblico su GitHub, nell’organizzazione sovereign-selfheal. La demo ha due metà. La prima è un gruppo di agenti AI che indagano sugli incidenti in un cluster Kubernetes. La seconda è un router che decide dove va ogni chiamata LLM di questi agenti. Oggi parlo del router.</aside>
+</section>
+
+<section class="slide slide--alt slide--center" id="question">
+  <p class="eyebrow">The question</p>
+  <h1 style="width:1500px">When an app calls an LLM, where does the data go?</h1>
+  <p class="lead muted" style="width:1300px">Prompts carry logs, metrics, tickets, and sometimes customer data.</p>
+  <aside class="notes" lang="it">[0:30] Parto da una domanda. Quando un’applicazione chiama un large language model, dove vanno i dati? Pensate a cosa finisce oggi in un prompt. Non c’è solo la domanda che scrive una persona. Ci sono log, metriche, ticket e a volte i dati dei nostri clienti. Quando quel prompt esce dal cluster, non lo controlliamo più.</aside>
+</section>
+
+<!-- ===================== The problem ===================== -->
+
+<section class="slide slide--content" id="agents-read">
+  <header class="head"><p class="eyebrow">The problem</p><h2>What an AI agent sends to the model</h2></header>
+  <div class="row row--wide">
+    <div class="stack stack--28" style="width:620px">
+      <p class="muted">One real investigation of our AI SRE agent, after an alert:</p>
+      <div class="stack stack--tight"><p class="num">5</p><p class="muted">LLM turns</p></div>
+      <div class="stack stack--tight"><p class="num">13</p><p class="muted">tool calls: metrics, pod lists, logs</p></div>
+      <div class="stack stack--tight"><p class="num">44 s</p><p class="muted">from the alert to the incident</p></div>
+    </div>
+    <figure class="stack stack--16 grow">
+      <figcaption class="strong">Input tokens per LLM turn</figcaption>
+      <div class="bars" role="img" aria-label="Input tokens per turn: 8,028, 8,300, 11,210, 20,551 and 22,876">
+        <div class="bar"><span>8,028</span><span class="bar-fill" style="height:119px"></span></div>
+        <div class="bar"><span>8,300</span><span class="bar-fill" style="height:123px"></span></div>
+        <div class="bar"><span>11,210</span><span class="bar-fill" style="height:166px"></span></div>
+        <div class="bar"><span>20,551</span><span class="bar-fill" style="height:304px"></span></div>
+        <div class="bar bar--max"><span>22,876</span><span class="bar-fill" style="height:338px"></span></div>
+      </div>
+      <div class="bar-labels" aria-hidden="true"><span>Turn 1</span><span>Turn 2</span><span>Turn 3</span><span>Turn 4</span><span>Turn 5</span></div>
+      <p class="muted">Every turn sends the whole conversation again: system prompt, tool definitions and all tool output.</p>
+    </figure>
+  </div>
+  <footer class="foot"><span>Source: one investigation in the payments namespace, 16 October 2026</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:30] Ecco un esempio reale dal nostro cluster di demo. Scatta un alert nel namespace payments e l’agente AI SRE di quel namespace avvia un’indagine. L’agente lavora a turni. A ogni turno il modello chiede una chiamata a un tool: una query Prometheus, la lista dei pod o i log di un pod. Il tool risponde e l’agente rimanda tutto al modello. Guardate il grafico: in cinque turni l’input cresce da circa 8.000 a quasi 23.000 token, perché ogni turno rimanda tutta la conversazione. Il system prompt, le definizioni dei tool e tutto l’output dei tool. Ed è proprio nell’output dei tool che si nascondono i dati sensibili: il nome di un cliente in una riga di log, un IBAN in un messaggio di errore, un ticket scritto da qualcuno. Nessuno scrive questi dati nel prompt. Arrivano e basta.</aside>
+</section>
+
+<section class="slide slide--content" id="local-or-cloud">
+  <header class="head"><p class="eyebrow">The problem</p><h2>Local model or cloud model</h2></header>
+  <table class="table table--30">
+    <tr><th style="width:24%"><span class="visually-hidden">Aspect</span></th><th class="local" style="width:38%">Local GPU model</th><th class="sota" style="width:38%">External SOTA model</th></tr>
+    <tr><td class="strong">In the demo</td><td>Qwen3.8 27B (NVFP4) on vLLM</td><td>Gemini 2.5 Pro</td></tr>
+    <tr><td class="strong">Runs on</td><td>a GPU node in the cluster</td><td>the provider’s cloud</td></tr>
+    <tr><td class="strong">Your data</td><td>stays in the cluster</td><td>leaves the cluster</td></tr>
+    <tr><td class="strong">Cost</td><td>fixed: the GPU you run</td><td>per token</td></tr>
+    <tr><td class="strong">Best for</td><td>short and routine work</td><td>long and complex reasoning</td></tr>
+    <tr><td class="strong">Availability</td><td>in your hands</td><td>the provider’s: quotas and errors</td></tr>
+  </table>
+  <p class="strong">Always local limits what the agents can do. Always cloud sends everything out.</p>
+  <footer class="foot"><span>Linux Day Milano 2026</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:30] Quindi abbiamo due opzioni. Un modello locale gira su un nodo GPU dentro il cluster. Nella nostra demo è Qwen3.8 27B, quantizzato in NVFP4 e servito da vLLM. I dati restano nel cluster e il costo è fisso: paghi la GPU, non i token. Un modello esterno allo stato dell’arte, nella nostra demo Gemini 2.5 Pro, è più forte nei ragionamenti lunghi e complessi. Però ogni prompt esce dal cluster, paghi per token e la disponibilità dipende dal provider. Un esempio reale: in un nostro test del 16 ottobre, 3 chiamate su 22 al modello esterno sono fallite con un errore HTTP 500. Il router ha mandato quelle richieste al modello locale e gli agenti non se ne sono accorti. Se mandiamo tutto al modello locale, limitiamo quello che gli agenti possono fare. Se mandiamo tutto nel cloud, mandiamo fuori tutti i nostri dati. Vogliamo entrambi, e vogliamo scegliere richiesta per richiesta.</aside>
+</section>
+
+<section class="slide slide--accent slide--center" id="thesis">
+  <p class="eyebrow">The idea of this talk</p>
+  <h1 style="width:1500px">The gateway decides, request by request.</h1>
+  <div class="stack stack--16">
+    <p class="lead">Every client calls one endpoint and asks for the model “auto”.</p>
+    <p class="lead">The API key tells the router which team is calling.</p>
+    <p class="lead">Four gates choose: the local GPU or the external model.</p>
+  </div>
+  <aside class="notes" lang="it">[1:00] Questa è l’idea del talk. Il client non sceglie il modello. Ogni client, che sia una persona con una chat o un agente AI, chiama un solo endpoint compatibile con OpenAI e chiede un modello che si chiama auto. La API key dice alla piattaforma quale team sta chiamando. Poi quattro gate guardano la richiesta e scelgono: la GPU locale o il modello esterno. La decisione appartiene al platform team ed è la stessa per ogni client. Vediamo il percorso di una richiesta.</aside>
+</section>
+
+<!-- ===================== The architecture ===================== -->
+
+<section class="slide slide--content" id="request-path">
+  <header class="head"><p class="eyebrow">The architecture</p><h2>The path of a request</h2></header>
+  <div class="diagram" style="height:620px">
+    <div class="boundary" style="left:0;top:0;width:1288px;height:620px"></div>
+    <p class="boundary-label" style="left:32px;top:18px;width:1000px">Red Hat OpenShift cluster (upstream: OKD, Kubernetes)</p>
+    <div class="box" style="left:32px;top:64px;width:320px;height:244px">
+      <p class="box-title">AI SRE agent</p><p>one per namespace</p><p class="muted">or any LLM client</p>
+    </div>
+    <div class="box" style="left:432px;top:64px;width:340px;height:244px">
+      <p class="box-title">Gateway</p><p>API key → team, token limits</p><p class="muted">Connectivity Link (Kuadrant) on Envoy</p>
+    </div>
+    <div class="box" style="left:852px;top:64px;width:340px;height:244px">
+      <p class="box-title">Router</p><p>LiteLLM + our policy hook</p><p class="muted">4 gates decide</p>
+    </div>
+    <div class="box box--sota" style="left:1344px;top:64px;width:320px;height:244px">
+      <p class="box-title">SOTA model</p><p>Gemini 2.5 Pro</p><p>external provider</p><p>only clean work</p>
+    </div>
+    <div class="box box--code" style="left:32px;top:372px;width:700px;height:244px">
+      <p class="dim">What the client sends</p>
+      <p class="mono">POST /v1/chat/completions</p>
+      <p class="mono">Authorization: &lt;agent API key&gt;</p>
+      <p class="mono">{"model": "auto", "messages": [...]}</p>
+    </div>
+    <div class="box box--local" style="left:812px;top:372px;width:444px;height:244px">
+      <p class="box-title">Local model</p><p>Qwen3.8 27B NVFP4 on vLLM</p><p>Red Hat OpenShift AI (Open Data Hub, KServe)</p><p>NVIDIA GPU in the cluster</p>
+    </div>
+    <svg class="wires" width="1664" height="620" viewBox="0 0 1664 620" aria-hidden="true">
+      <line class="wire" x1="352" y1="186" x2="432" y2="186" marker-end="url(#arrow-dark)"/>
+      <line class="wire" x1="772" y1="186" x2="852" y2="186" marker-end="url(#arrow-dark)"/>
+      <line class="wire wire--sota" x1="1192" y1="186" x2="1344" y2="186" marker-end="url(#arrow-sota)"/>
+      <line class="wire wire--local" x1="1022" y1="308" x2="1022" y2="372" marker-end="url(#arrow-local)"/>
+    </svg>
+    <p class="tag sota" style="left:1200px;top:140px">SOTA</p>
+    <p class="tag local" style="left:1038px;top:322px">LOCAL</p>
+  </div>
+  <footer class="foot"><span>OpenShift implements the Kubernetes Gateway API with Istio and Envoy</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:30] Ecco il percorso di una richiesta. A sinistra c’è il client. Nella nostra demo è un agente AI SRE, uno per namespace, ma può essere qualsiasi client che parla l’API di OpenAI. Manda una normale richiesta di chat completion con il modello auto e la sua API key. La richiesta entra nel gateway. È la Gateway API di Kubernetes, che OpenShift implementa con Istio ed Envoy. Sopra c’è Red Hat Connectivity Link, cioè il progetto upstream Kuadrant: controlla la API key, la associa a un team e applica i limiti di token per team. Poi arriva il router: LiteLLM, un progetto della community, più il nostro policy hook, che esegue quattro gate. La destinazione di default è il modello locale: Qwen3.8 27B, quantizzato in NVFP4, servito da vLLM su Red Hat OpenShift AI, che upstream è Open Data Hub con KServe, su una GPU NVIDIA nel cluster. Solo le richieste che passano tutti e quattro i gate escono dal cluster e vanno al modello esterno, nella nostra demo Gemini 2.5 Pro. Accanto al router girano alcuni componenti di supporto che vi mostro dopo: un secondo modello piccolo che risponde a domande sulla privacy, un Redis per i budget di token, e OpenTelemetry con Tempo per le trace.</aside>
+</section>
+
+<section class="slide slide--content" id="stack-path">
+  <header class="head"><p class="eyebrow">The architecture</p><h2>Open source on the request path</h2></header>
+  <table class="table">
+    <tr><th style="width:26%">Role</th><th style="width:38%">Red Hat product</th><th style="width:36%">Upstream project</th></tr>
+    <tr><td>Platform</td><td>Red Hat OpenShift</td><td class="strong">Kubernetes, OKD</td></tr>
+    <tr><td>Gateway</td><td>OpenShift Gateway API implementation</td><td class="strong">Gateway API, Istio, Envoy</td></tr>
+    <tr><td>API keys, token limits</td><td>Red Hat Connectivity Link</td><td class="strong">Kuadrant: Authorino, Limitador</td></tr>
+    <tr><td>Router</td><td class="muted">community project</td><td><strong>LiteLLM</strong> + our policy hook</td></tr>
+    <tr><td>Local model serving</td><td>Red Hat OpenShift AI</td><td class="strong">Open Data Hub, KServe, vLLM</td></tr>
+    <tr><td>Decision model</td><td>Red Hat AI Inference Server (preview)</td><td class="strong">vLLM</td></tr>
+    <tr><td>SOTA token budget</td><td class="muted">community project</td><td class="strong">Redis</td></tr>
+    <tr><td>PII detection (optional)</td><td class="muted">community project</td><td class="strong">Presidio</td></tr>
+  </table>
+  <p class="small muted">LiteLLM and Presidio are community software, not supported by Red Hat. Routing between a local and an external model is Technology Preview in Red Hat OpenShift AI 3.5. The decision model runs on an unsupported preview image.</p>
+  <footer class="foot"><span>Red Hat product → upstream project</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:00] Visto che siamo al Linux Day, vi faccio la mappa di ogni prodotto Red Hat della demo con il suo progetto upstream. Sul percorso della richiesta: OpenShift è Kubernetes, con OKD come distribuzione della community. Il gateway è la Gateway API di Kubernetes, implementata con Istio ed Envoy. Red Hat Connectivity Link upstream è Kuadrant, con Authorino per l’autenticazione e Limitador per i rate limit. Red Hat OpenShift AI upstream è Open Data Hub, con KServe e vLLM per servire i modelli. Il decision model gira su un’immagine preview di Red Hat AI Inference Server, che upstream è vLLM. LiteLLM, Redis e Presidio sono progetti della community che usiamo direttamente. Una nota onesta: LiteLLM e Presidio non sono supportati da Red Hat, e il routing tra un modello locale e uno esterno è Technology Preview in OpenShift AI 3.5. Questa è una demo della community, non un prodotto.</aside>
+</section>
+
+<section class="slide slide--content" id="stack-platform">
+  <header class="head"><p class="eyebrow">The architecture</p><h2>Open source around the request path</h2></header>
+  <table class="table">
+    <tr><th style="width:26%">Role</th><th style="width:38%">Red Hat product</th><th style="width:36%">Upstream project</th></tr>
+    <tr><td>Install, day 0 and day 1</td><td class="muted">upstream used directly</td><td class="strong">Ansible</td></tr>
+    <tr><td>GitOps</td><td>Red Hat OpenShift GitOps</td><td class="strong">Argo CD</td></tr>
+    <tr><td>Metrics and alerts</td><td>OpenShift monitoring stack</td><td class="strong">Prometheus, Alertmanager, Thanos</td></tr>
+    <tr><td>Traces</td><td>Red Hat build of OpenTelemetry</td><td class="strong">OpenTelemetry</td></tr>
+    <tr><td>Trace storage</td><td>Red Hat OpenShift distributed tracing platform</td><td class="strong">Grafana Tempo</td></tr>
+    <tr><td>Dashboards</td><td>Cluster Observability Operator</td><td class="strong">Perses</td></tr>
+    <tr><td>Scale to zero</td><td>Custom Metrics Autoscaler</td><td class="strong">KEDA</td></tr>
+    <tr><td>Secrets</td><td>External Secrets Operator for Red Hat OpenShift</td><td class="strong">External Secrets Operator</td></tr>
+  </table>
+  <footer class="foot"><span>Red Hat product → upstream project</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[0:30] E intorno al percorso della richiesta. Ansible per la prima installazione: qui usiamo direttamente il progetto upstream. Argo CD, come Red Hat OpenShift GitOps, installa ogni workload da git. Prometheus, Alertmanager e Thanos, nello stack di monitoring di OpenShift, ci danno metriche e alert. OpenTelemetry e Grafana Tempo raccolgono e salvano le trace. Perses disegna le dashboard nella console di OpenShift. KEDA, cioè il Custom Metrics Autoscaler, fa partire un componente da zero. E l’External Secrets Operator porta dentro i secret. Tutti i progetti nella colonna di destra sono open source.</aside>
+</section>
+
+<!-- ===================== How the router decides ===================== -->
+
+<section class="slide slide--content" id="chain">
+  <header class="head"><p class="eyebrow">How the router decides</p><h2>Four gates, in order</h2></header>
+  <div class="diagram" style="height:480px">
+    <div class="box" style="left:0;top:0;width:300px;height:216px">
+      <p class="gate-no">Gate 1</p><p class="box-title">Namespace</p><p class="muted">Restricted namespace?</p>
+    </div>
+    <div class="box" style="left:344px;top:0;width:300px;height:216px">
+      <p class="gate-no">Gate 2</p><p class="box-title">Efficiency</p><p class="muted">Needs the external model?</p>
+    </div>
+    <div class="box" style="left:688px;top:0;width:300px;height:216px">
+      <p class="gate-no">Gate 3</p><p class="box-title">Privacy</p><p class="muted">Sensitive data inside?</p>
+    </div>
+    <div class="box" style="left:1032px;top:0;width:300px;height:216px">
+      <p class="gate-no">Gate 4</p><p class="box-title">Tiering</p><p class="muted">Team may use SOTA?</p>
+    </div>
+    <div class="box box--sota" style="left:1376px;top:0;width:288px;height:216px">
+      <p class="label">Then</p><p class="box-title">SOTA</p><p>if all four gates pass</p>
+    </div>
+    <div class="box box--local" style="left:0;top:336px;width:1332px;height:136px">
+      <p class="box-title">LOCAL: Qwen3.8 27B on the cluster GPU</p>
+      <p>The first gate that says LOCAL decides. The gates after it do not run.</p>
+    </div>
+    <svg class="wires" width="1664" height="480" viewBox="0 0 1664 480" aria-hidden="true">
+      <line class="wire" x1="300" y1="108" x2="344" y2="108" marker-end="url(#arrow-dark)"/>
+      <line class="wire" x1="644" y1="108" x2="688" y2="108" marker-end="url(#arrow-dark)"/>
+      <line class="wire" x1="988" y1="108" x2="1032" y2="108" marker-end="url(#arrow-dark)"/>
+      <line class="wire wire--sota" x1="1332" y1="108" x2="1376" y2="108" marker-end="url(#arrow-sota)"/>
+      <line class="wire wire--local" x1="150" y1="216" x2="150" y2="336" marker-end="url(#arrow-local)"/>
+      <line class="wire wire--local" x1="494" y1="216" x2="494" y2="336" marker-end="url(#arrow-local)"/>
+      <line class="wire wire--local" x1="838" y1="216" x2="838" y2="336" marker-end="url(#arrow-local)"/>
+      <line class="wire wire--local" x1="1182" y1="216" x2="1182" y2="336" marker-end="url(#arrow-local)"/>
+    </svg>
+  </div>
+  <p>Any error in a gate also sends the request to LOCAL: the router <strong>fails closed</strong>.</p>
+  <footer class="foot"><span>Router v0.12.1 · policy in the gitops repository</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:30] Ecco i quattro gate. Ogni richiesta li attraversa in quest’ordine: namespace, efficiency, privacy e tiering. Ogni gate può dire LOCAL. Il primo gate che dice LOCAL decide, e i gate successivi non vengono eseguiti. Così la decisione costa poco: una richiesta su un namespace restricted non arriva mai ai detector della privacy. Solo una richiesta che passa tutti e quattro i gate va al modello esterno. E se qualcosa va storto dentro un gate, per esempio un detector va in timeout, anche in quel caso la richiesta va al modello locale. Lo chiamiamo fail-closed: nel dubbio, i dati restano nel cluster. Vediamo i gate uno per uno.</aside>
+</section>
+
+<section class="slide slide--content" id="gate-namespace">
+  <header class="head-row">
+    <div class="head"><p class="eyebrow">How the router decides</p><h2>Gate 1: namespace</h2></div>
+    <ol class="chain-mini" aria-label="The four gates"><li aria-current="step">1 Namespace</li><li>2 Efficiency</li><li>3 Privacy</li><li>4 Tiering</li></ol>
+  </header>
+  <div class="row row--wide">
+    <div class="stack stack--28 grow">
+      <p>The platform team labels the namespace of a sensitive application:</p>
+      <pre class="code">$ oc label namespace payments \
+    sovereign-selfheal.io/data-class=restricted</pre>
+      <ul>
+        <li>Every request about that namespace stays LOCAL.</li>
+        <li>No other gate runs: no detector, no budget read.</li>
+        <li>The router finds the name in the request text: PromQL matchers, “-n payments”, payments.svc, JSON keys.</li>
+      </ul>
+    </div>
+    <div class="card" style="width:540px">
+      <p class="big">3.9 ms</p>
+      <p class="muted">to scan a real agent request of 39,283 characters</p>
+      <hr>
+      <p class="small muted">Reason in the router log:</p>
+      <p class="reason reason--local">namespace: restricted payments (found by scan) -&gt; LOCAL</p>
+    </div>
+  </div>
+  <footer class="foot"><span>Trace of a real agent turn, demo cluster, 16 October 2026</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[2:00] Il gate uno è la parte più nativa Kubernetes di questo talk. Un platform team sa quali applicazioni trattano dati sensibili. Quindi mette una label sul namespace: un solo comando oc label, con la chiave sovereign-selfheal.io/data-class e il valore restricted. Da quel momento ogni richiesta che riguarda quel namespace resta sul modello locale, e nessun altro gate viene eseguito. Niente detector e niente controllo del budget: è anche la decisione più veloce. Come fa il router a sapere di quale namespace parla una richiesta? Legge il testo della richiesta e cerca i nomi dei namespace: i matcher delle label PromQL, come namespace uguale payments, “meno n payments” in un comando, payments punto svc nel nome di un servizio, e le chiavi namespace in JSON o YAML, anche dentro gli argomenti delle chiamate ai tool. Su una richiesta reale di un agente, di quasi 40.000 caratteri, questa scansione ha richiesto 3,9 millisecondi. Un agente può anche mandare la lista dei suoi namespace nel corpo della richiesta, come suggerimento. Il router legge le label con un ServiceAccount che può solo fare get, list e watch dei namespace, e le rilegge ogni cinque secondi. Solo il valore restricted cambia il routing. Un namespace senza label, o con il valore public, segue i gate normali.</aside>
+</section>
+
+<section class="slide slide--content" id="gate-efficiency">
+  <header class="head-row">
+    <div class="head"><p class="eyebrow">How the router decides</p><h2>Gate 2: efficiency</h2></div>
+    <ol class="chain-mini" aria-label="The four gates"><li>1 Namespace</li><li aria-current="step">2 Efficiency</li><li>3 Privacy</li><li>4 Tiering</li></ol>
+  </header>
+  <p>Three cases stay LOCAL. Every other request goes on to the next gate.</p>
+  <div class="row">
+    <div class="card grow">
+      <p class="to-local">→ LOCAL</p>
+      <h3>Short and simple</h3>
+      <p>Up to 280 characters and 40 words, with no keyword like “analyze” or “compare”.</p>
+      <div class="spacer"></div>
+      <p class="reason">short/simple (30 chars, 6 words)</p>
+    </div>
+    <div class="card grow">
+      <p class="to-local">→ LOCAL</p>
+      <h3>Too large</h3>
+      <p>The whole request is over 150,000 characters. No detector runs on it.</p>
+      <div class="spacer"></div>
+      <p class="reason">SOTA context limit (157466 &gt; 150000 chars)</p>
+    </div>
+    <div class="card grow">
+      <p class="to-local">→ LOCAL</p>
+      <h3>Budget used</h3>
+      <p>The agent used its 30,000 SOTA tokens in 5 minutes. It goes on with the local model, with no HTTP 429.</p>
+      <div class="spacer"></div>
+      <p class="reason">SOTA budget of tier agents used (31261/30000 tokens in 5m)</p>
+    </div>
+  </div>
+  <footer class="foot"><span>Values from the demo policy; reasons copied from the router log</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:30] Il gate due riguarda l’efficienza. Tre tipi di richiesta restano in locale. Primo, le domande brevi e semplici: fino a 280 caratteri e 40 parole, senza parole chiave come analyze o compare. Il modello locale risponde bene e in fretta. Secondo, le richieste troppo grandi: oltre 150.000 caratteri. Gli agenti possono mandare contesti molto grandi, e sopra questa dimensione i nostri detector della privacy avrebbero bisogno di troppo tempo. Quindi la richiesta resta in locale e nessun detector la legge. Terzo, il budget di token. Ogni agente ha un budget di token per il modello esterno: 30.000 token in una finestra mobile di cinque minuti. Un’applicazione business-critical può avere un budget più grande. Quando il budget è finito, l’agente non riceve un errore: continua semplicemente con il modello locale. Il gateway ha comunque un limite rigido di token per team, e sopra quel limite il client riceve un HTTP 429. Tutte le altre richieste, lunghe o complesse, passano al gate successivo.</aside>
+</section>
+
+<section class="slide slide--content" id="gate-privacy">
+  <header class="head-row">
+    <div class="head"><p class="eyebrow">How the router decides</p><h2>Gate 3: privacy</h2></div>
+    <ol class="chain-mini" aria-label="The four gates"><li>1 Namespace</li><li>2 Efficiency</li><li aria-current="step">3 Privacy</li><li>4 Tiering</li></ol>
+  </header>
+  <div class="row row--wide">
+    <div class="stack grow">
+      <div class="stack stack--tight"><p class="strong">Rules</p><p class="muted">Regular expressions with validators: payment cards with the Luhn check, IBAN, Italian tax codes.</p></div>
+      <div class="stack stack--tight"><p class="strong">Lexicons</p><p class="muted">Lists of words for health, credentials and other sensitive topics.</p></div>
+      <div class="stack stack--tight"><p class="strong">Decision model</p><p class="muted">Yes/no questions about the text, in one forward pass on a second GPU: a person? health? money? legal?</p></div>
+      <p class="strong">Score ≥ team threshold → LOCAL. A detector fails → LOCAL.</p>
+    </div>
+    <div class="stack" style="width:620px">
+      <div class="card card--tight">
+        <p class="label">Rules find identifiers</p>
+        <p class="small">“Analizza questo profilo: Mario Rossi, codice fiscale RSSMRA80A01H501U, IBAN IT60X0542811101000000123456 …”</p>
+        <p class="result">score 0.98 ≥ 0.70 → LOCAL, in 0.3 ms</p>
+      </div>
+      <div class="card card--tight">
+        <p class="label">The decision model finds a person</p>
+        <p class="small">“Analyze the career options of Mario Rossi, an Italian engineer who lives in Milan.”</p>
+        <p class="result">person: yes (1.00) → score 0.80 ≥ 0.70 → LOCAL</p>
+      </div>
+    </div>
+  </div>
+  <footer class="foot"><span>Synthetic test prompts of the validation suite · threshold 0.70 (research)</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[2:00] Il gate tre è il gate della privacy, ed è l’ultimo prima che i dati escano dal cluster. Legge tutta la richiesta: ogni messaggio, l’output dei tool e gli argomenti delle chiamate ai tool, non solo l’ultima domanda. Tre tipi di detector sommano un punteggio di privacy. Le regole: espressioni regolari con validatori. Per esempio, il numero di una carta di pagamento deve passare il controllo di Luhn, e controlliamo anche IBAN e codici fiscali. I lessici: liste di parole su salute, credenziali e altri temi sensibili. E un decision model: un secondo modello piccolo, sulla sua GPU. Il router gli fa domande sì o no sul testo. Parla di una persona privata? Di salute, di soldi, di una questione legale? Il modello risponde a ogni domanda con una probabilità, in un solo forward pass, in circa 150 millisecondi. A destra vedete due richieste di test. Nella prima, le regole trovano un codice fiscale e un IBAN. Il punteggio è 0,98, sopra la soglia del team research, quindi la richiesta resta in locale. Le sole regole hanno impiegato 0,3 millisecondi. Nella seconda non c’è nessun identificativo, solo una persona e qualche fatto privato. Le regole non vedono niente, ma il decision model risponde sì alla domanda sulla persona, quindi anche questa richiesta resta in locale. Ogni team ha la sua soglia: legal è molto severo, con 0,30; research è più aperto, con 0,70; gli altri team usano 0,50. E se un detector fallisce, la richiesta resta in locale.</aside>
+</section>
+
+<section class="slide slide--content" id="gate-tiering">
+  <header class="head-row">
+    <div class="head"><p class="eyebrow">How the router decides</p><h2>Gate 4: tiering</h2></div>
+    <ol class="chain-mini" aria-label="The four gates"><li>1 Namespace</li><li>2 Efficiency</li><li>3 Privacy</li><li aria-current="step">4 Tiering</li></ol>
+  </header>
+  <table class="table">
+    <tr><th style="width:30%">Team (from the API key)</th><th style="width:20%">Models</th><th style="width:25%">Gateway token limit</th><th style="width:25%">SOTA budget</th></tr>
+    <tr><td class="strong">legal</td><td class="local strong">local only</td><td>20,000 / 5 min</td><td>none</td></tr>
+    <tr><td class="strong">research</td><td>local + SOTA</td><td>100,000 / 1 min</td><td>none</td></tr>
+    <tr><td><strong>one per agent</strong>, e.g. agents-payments</td><td>local + SOTA</td><td>200,000 / 5 min</td><td>30,000 / 5 min</td></tr>
+    <tr><td class="strong">agents-critical</td><td>local + SOTA</td><td>600,000 / 5 min</td><td>150,000 / 5 min</td></tr>
+  </table>
+  <div class="row">
+    <div class="card card--tight grow">
+      <p class="label">How it works</p>
+      <p class="small">The gateway sets the team from the API key, in the header x-team. A client cannot change it.</p>
+      <p class="small">Tiering runs last, and it can only move a request to LOCAL.</p>
+    </div>
+    <div class="card card--tight grow">
+      <p class="label">Example: team legal</p>
+      <p class="small">“Compare in detail, step by step, the main approaches to database sharding and their trade-offs.”</p>
+      <p class="reason reason--local">tiering: team 'legal' not allowed 'sota-smart' -&gt; LOCAL</p>
+    </div>
+  </div>
+  <footer class="foot"><span>Limits from the demo’s gitops values; above its limit the gateway answers 429</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:00] Il gate quattro è il tiering. Il gateway ricava il team dalla API key. Authorino, in Kuadrant, scrive il team in un header che si chiama x-team, e sovrascrive qualsiasi valore mandato dal client. La policy dice quali modelli può usare ogni team. Il team legal può usare solo il modello locale, quindi anche una domanda pulita e complessa di legal resta in locale, come nell’esempio a destra. Il tiering viene per ultimo e può solo spostare una richiesta verso il locale, mai verso il modello esterno. La tabella mostra anche i due tipi di limite. Il gateway ha un limite rigido di token per team, e sopra quel limite il client riceve un HTTP 429. Il router ha un budget SOTA più morbido: quando un team l’ha consumato, le sue richieste continuano con il modello locale. Ogni agente ha la sua API key e il suo tier, quindi un’applicazione business-critical può avere un budget più grande.</aside>
+</section>
+
+<section class="slide slide--content" id="eight-requests">
+  <header class="head"><p class="eyebrow">How the router decides</p><h2>Eight requests, eight decisions</h2></header>
+  <table class="table">
+    <tr><th style="width:48%">Request</th><th style="width:17%">Team</th><th style="width:21%">Decided by</th><th style="width:14%">Result</th></tr>
+    <tr><td>An agent turn about payments (39,283 characters)</td><td>agents-payments</td><td>namespace</td><td class="local strong">LOCAL</td></tr>
+    <tr><td>“What is the capital of France?”</td><td>research</td><td>efficiency: short</td><td class="local strong">LOCAL</td></tr>
+    <tr><td>An agent-shaped test request (157,466 characters)</td><td>research</td><td>efficiency: size</td><td class="local strong">LOCAL</td></tr>
+    <tr><td>A complex question after the team’s budget is used</td><td>validation</td><td>efficiency: budget</td><td class="local strong">LOCAL</td></tr>
+    <tr><td>A profile with a tax code, an IBAN and a phone number</td><td>research</td><td>privacy: rules</td><td class="local strong">LOCAL</td></tr>
+    <tr><td>“Analyze the career options of Mario Rossi …”</td><td>research</td><td>privacy: decision model</td><td class="local strong">LOCAL</td></tr>
+    <tr><td>“Compare … the main approaches to database sharding …”</td><td>legal</td><td>tiering</td><td class="local strong">LOCAL</td></tr>
+    <tr class="is-sota"><td>“Analyze the trade-offs between event sourcing and CRUD …”</td><td>research</td><td>all four gates pass</td><td class="sota strong">SOTA</td></tr>
+  </table>
+  <footer class="foot"><span>Captured on the demo cluster on 16 October 2026 (router v0.12.1)</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:30] Ecco otto richieste reali dal nostro cluster di demo, ognuna con il gate che ha deciso. La prima è un turno di un agente sul namespace payments: la tiene in locale il gate del namespace. La seconda è una domanda breve: locale. La terza è una richiesta enorme, sopra il limite di dimensione: locale. La quarta viene da un team che ha finito il suo budget: locale. La quinta e la sesta contengono dati personali. Le regole prendono la quinta. La sesta non ha identificativi, e la prende il decision model. La settima viene dal team legal, e il tiering la tiene in locale. Solo l’ultima, una domanda pulita e complessa di un team che può usare il modello esterno, esce dal cluster. Sul sito della demo c’è un simulatore che riproduce queste otto richieste passo per passo, con le motivazioni reali prese dal log del router.</aside>
+</section>
+
+<!-- ===================== Seeing it work ===================== -->
+
+<section class="slide slide--content" id="traces">
+  <header class="head"><p class="eyebrow">Seeing it work</p><h2>Tracing every decision</h2></header>
+  <div class="center">
+    <img class="shot" src="../../img/screens/tempo-trace.png" width="1560" height="548" alt="A trace in the OpenShift console: under router.chain, the spans gate.namespace, gate.efficiency and gate.privacy; the privacy gate found a codice fiscale and an IBAN, so the request stayed local">
+  </div>
+  <div class="row row--center">
+    <p><strong>3.9 ms</strong> · namespace scan</p>
+    <p><strong>156 ms</strong> · privacy with the decision model</p>
+    <p><strong>1.8 s</strong> · the SOTA answer</p>
+  </div>
+  <footer class="foot"><span>OpenTelemetry → Tempo, in the OpenShift console (Observe → Traces)</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:30] Ogni decisione è anche una trace. LiteLLM crea uno span per ogni richiesta, e il nostro hook aggiunge uno span che si chiama router.chain, con uno span figlio per ogni gate. Ogni span porta il verdetto e la motivazione. Questo screenshot viene dalla console di OpenShift, in Observe, Traces. Vedete il gate della privacy e, a destra, la motivazione: ha trovato un codice fiscale e un IBAN, quindi la richiesta è rimasta in locale. Le trace ci dicono anche quanto costano i gate. La scansione dei namespace ha richiesto 3,9 millisecondi su una richiesta reale di un agente. Il gate della privacy con il decision model circa 156 millisecondi. Il modello esterno ha impiegato 1,8 secondi per rispondere. Quindi il routing aggiunge pochissimo al tempo di una richiesta. Una regola nel codice: il tracing non è mai sul percorso della decisione. Se il tracing fallisce, la decisione è la stessa. Gli span passano dal collector OpenTelemetry, il Red Hat build of OpenTelemetry, e arrivano nella Red Hat OpenShift distributed tracing platform, che upstream è Grafana Tempo.</aside>
+</section>
+
+<section class="slide slide--content" id="dashboards">
+  <header class="head"><p class="eyebrow">Seeing it work</p><h2>Dashboards and a live page</h2></header>
+  <div class="row row--wide">
+    <figure class="stack stack--16" style="width:1040px">
+      <img class="shot" src="../../img/screens/perses-routing-decisions.png" width="1040" height="453" alt="Perses dashboard Sovereign router, routing decisions: 178 requests kept local, 101 sent to SOTA, 86 stopped by the privacy gate, 2 SOTA fallbacks, and a pie chart of the gate that decided">
+      <figcaption class="small muted">Perses dashboards in the OpenShift console: what stayed local, what went out, and which gate decided.</figcaption>
+    </figure>
+    <figure class="stack stack--16" style="width:560px">
+      <img class="shot shot--dark" src="../../img/screens/live-page.png" width="560" height="517" alt="Routing Live View page: 0 restricted requests sent outside the cluster, a diagram of the namespaces, agents, router and models, and a table of the latest decisions">
+      <figcaption class="small muted">A live page for the audience: every decision as it happens.</figcaption>
+    </figure>
+  </div>
+  <footer class="foot"><span>Perses (Cluster Observability Operator) · live page: routing-live-view repo</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:00] Gli stessi dati alimentano le dashboard. A sinistra c’è una dashboard Perses nella console di OpenShift. Perses arriva con il Cluster Observability Operator. Mostra quante richieste sono rimaste in locale, quante sono andate al modello esterno e quale gate ha deciso. Il router esporta metriche Prometheus per questo, per esempio router_requests_total, con label per la destinazione e per il gate. A destra c’è una piccola pagina live che abbiamo scritto per il pubblico. Legge il log del router e mostra ogni decisione nel momento in cui avviene. Il numero in alto a sinistra è quello a cui tengo di più: zero richieste restricted mandate fuori dal cluster. La pagina può anche cambiare la label di un namespace, se l’utente collegato ha il permesso di farlo, così durante la demo possiamo rendere restricted un namespace.</aside>
+</section>
+
+<section class="slide slide--content" id="demo">
+  <header class="head"><p class="eyebrow">Seeing it work</p><h2>Demo: two alerts, two namespaces</h2></header>
+  <div class="row">
+    <div class="card card--restricted grow">
+      <p class="badge badge--restricted">RESTRICTED</p>
+      <h3>payments</h3>
+      <p>Every LLM turn of its agent stays on the local GPU.</p>
+      <p class="small">Decided by: the namespace gate</p>
+    </div>
+    <div class="card card--sota grow">
+      <p class="badge badge--public">PUBLIC</p>
+      <h3>rh-reserve</h3>
+      <p>Clean, complex turns go to the external model.</p>
+      <p class="small">Decided by: all four gates pass</p>
+    </div>
+  </div>
+  <div class="stack" style="gap:12px">
+    <p class="label">What to watch</p>
+    <div class="row">
+      <p class="card card--tight grow"><span><strong>1</strong> · the live page, decision by decision</span></p>
+      <p class="card card--tight grow"><span><strong>2</strong> · one trace in the OpenShift console</span></p>
+      <p class="card card--tight grow"><span><strong>3</strong> · the incident that the agent opens</span></p>
+    </div>
+  </div>
+  <footer class="foot"><span>No cluster? The next two slides run the simulator and the replay, also offline.</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[10:00, demo] Adesso ve lo faccio vedere in funzione. Apri la live page e la console di OpenShift una accanto all’altra. Passo 1: nel namespace payments, aspetta l’alert QuarkusBuggyAppHighErrorRate (più del 10% di risposte HTTP 5xx per 5 minuti), oppure avvia l’agente dalla sua pagina web. L’alert va all’ogx-alert-translator, che avvia l’agente del namespace payments. Sulla live page ogni turno LLM dell’agente di payments compare con il gate del namespace e la GPU locale. Passo 2: apri una di queste trace in Observe, Traces. Lo span router.chain ha solo il figlio gate.namespace: nessun altro gate è stato eseguito. Passo 3: mostra l’incidente che l’agente ha aperto nel sistema di ticketing. Passo 4: fai lo stesso per rh-reserve. I suoi turni vanno al modello esterno, perché passano tutti e quattro i gate. Passo opzionale: dalla live page segna rh-reserve come restricted e mostra che i turni successivi restano in locale. Piano B, se il cluster non è disponibile: le due slide successive contengono il simulatore del router e il replay delle due indagini, presi dal sito; funzionano anche offline, da una copia locale del repo servita con python3 -m http.server. Prima del talk: crea il cluster il giorno prima, disattiva lo stop automatico e controlla che entrambi i nodi GPU siano pronti; trovare capacità GPU su AWS può richiedere ore.</aside>
+</section>
+
+<section class="slide slide--live" id="demo-simulator">
+  <header class="head"><p class="eyebrow">Demo · plan B</p><h2>The router simulator, live</h2></header>
+  <div class="live">
+    <iframe data-src="live-simulator.html" title="Router simulator of the demo site"></iframe>
+    <p class="live-note">The simulator runs on the audience screen. ↓ ↑ change the example, P pauses or plays.</p>
+    <p class="live-print">Live on sovereign-selfheal.github.io: “Watch the router decide”</p>
+  </div>
+  <aside class="notes" lang="it">[piano B] Se il cluster non risponde, uso il simulatore del sito, qui dentro. Ogni esempio è una richiesta vera del cluster di demo, con le motivazioni vere prese dal log del router. Il simulatore scorre da solo. Con le frecce giù e su cambi esempio e con P lo metti in pausa o lo fai ripartire, anche dalla finestra del presentatore: lì vedi solo un avviso, il simulatore gira sullo schermo del pubblico. Fai vedere almeno tre casi: il namespace restricted, i dati personali e la richiesta pulita e complessa che va al modello esterno. Puoi anche cliccare dentro il riquadro sul proiettore: Pagina giù, Pagina su e le frecce destra e sinistra cambiano comunque slide.</aside>
+</section>
+
+<section class="slide slide--live" id="demo-replay">
+  <header class="head"><p class="eyebrow">Demo · plan B</p><h2>The investigation replay, live</h2></header>
+  <div class="live">
+    <iframe data-src="live-replay.html" title="Investigation replay of the demo site"></iframe>
+    <p class="live-note">The replay runs on the audience screen. ↓ ↑ change the investigation, P plays it again.</p>
+    <p class="live-print">Live on sovereign-selfheal.github.io: “From the alert to the incident”</p>
+  </div>
+  <aside class="notes" lang="it">[piano B] Il replay delle due indagini vere del 16 ottobre. Parte da solo quando arrivi su questa slide; con P, o con il pulsante Replay, lo rifai. Con le frecce giù e su passi da un’indagine all’altra, e la nuova parte subito. Prima payments, il namespace restricted: ogni turno LLM resta sulla GPU locale, deciso dal gate del namespace, e l’incidente arriva dopo 44 secondi. Poi rh-reserve, il namespace public: i suoi turni vanno al modello esterno. Il cerchio vuoto è una chiamata a un tool che è fallita: l’agente vede l’errore e la ripete. I tasti funzionano anche dalla finestra del presentatore.</aside>
+</section>
+
+<!-- ===================== Lessons learned ===================== -->
+
+<section class="slide slide--content" id="false-positives">
+  <header class="head"><p class="eyebrow">Lessons learned</p><h2>False positives on technical text</h2></header>
+  <p>Agent requests are full of logs, metrics and technical words.</p>
+  <div class="row">
+    <div class="card grow">
+      <p class="mono strong">0.024836864197530867</p>
+      <p>A value from Prometheus. Its digits pass the Luhn check, so a rule saw a payment card.</p>
+      <div class="spacer"></div>
+      <p class="result">Fix: the card rule ignores decimal numbers.</p>
+    </div>
+    <div class="card grow">
+      <p class="mono strong">Kafka, Paxos</p>
+      <p>Presidio NER read single technical words as names of people.</p>
+      <div class="spacer"></div>
+      <p class="result">Fix: a person needs at least two words.</p>
+    </div>
+    <div class="card grow">
+      <p class="mono strong">Diagnosis Summary</p>
+      <p>A heading in the agent’s own prompt matched the health lexicon.</p>
+      <div class="spacer"></div>
+      <p class="result">Fix: the word left the lexicon.</p>
+    </div>
+  </div>
+  <p class="strong">With the decision model on, we turned Presidio NER off: false positives on agent contexts went from 18 to 0, with no new leaks in our evaluation.</p>
+  <footer class="foot"><span>Source: router evaluation of 5 October 2026 (docs in the router repository)</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[2:00] Ora alcune lezioni da un cluster vero. La prima riguarda i falsi positivi. I nostri primi detector erano tarati su prompt scritti da persone. Le richieste degli agenti sono diverse: sono piene di log, metriche e parole tecniche. Tre esempi. Un valore di Prometheus: 0,024836864197530867. Le sue cifre passano il controllo di Luhn, quindi la nostra regola ci ha visto una carta di pagamento, e la richiesta è rimasta in locale. La correzione: la regola delle carte ora ignora i numeri decimali. Secondo: Presidio, il riconoscitore di entità, leggeva parole tecniche singole come Kafka o Paxos come nomi di persona. La correzione: ora una persona deve avere almeno due parole, quindi un nome completo come Mario Rossi conta ancora. Terzo: il prompt stesso dell’agente aveva un titolo, Diagnosis Summary, e la parola diagnosis era nel nostro lessico della salute. Così ogni richiesta dell’agente sembrava contenere dati sanitari. Abbiamo tolto la parola. Un falso positivo non è un rischio per la privacy, perché i dati restano in locale. Però rende inutile il modello esterno per gli agenti. Alla fine, con il decision model attivo, abbiamo spento il riconoscimento di entità di Presidio. Sul nostro insieme di contesti degli agenti i falsi positivi sono scesi da 18 a 0, e la valutazione non ha mostrato nuove fughe di dati.</aside>
+</section>
+
+<section class="slide slide--content" id="gateway-bug">
+  <header class="head"><p class="eyebrow">Lessons learned</p><h2>A bug in the gateway</h2></header>
+  <p>The agent runtime asked for the model list twice. The second call never came back.</p>
+  <div class="row row--wide">
+    <pre class="code" style="width:760px">$ curl --http1.1 -H "$AUTH" \
+    $URL/v1/models $URL/v1/models
+<span class="dim">first request:  HTTP 200</span>
+<span class="dim">second request: no answer, timeout</span></pre>
+    <ol class="grow">
+      <li>The token limit reads usage.total_tokens in every answer.</li>
+      <li>A GET of the model list has no usage. The Wasm filter fails, and the answer never ends.</li>
+      <li>The next request on the same keep-alive connection waits forever.</li>
+    </ol>
+  </div>
+  <div class="row">
+    <div class="card card--tight card--local grow">
+      <p class="strong">Fix: count tokens only for POST requests</p>
+      <p class="small mono">when: request.method == 'POST'</p>
+    </div>
+    <div class="card card--tight grow">
+      <p class="strong">Lesson: test like production</p>
+      <p class="small">Our test suite opened a new connection for every call, so it never saw the bug.</p>
+    </div>
+  </div>
+  <footer class="foot"><span>Connectivity Link 1.4.3 (Kuadrant) · fixed in our policy on 2 Oct 2026</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[2:00] La seconda lezione riguarda il gateway. Il runtime del nostro agente partiva, chiedeva al router la lista dei modelli, poi la chiedeva di nuovo, e la seconda chiamata non tornava mai. Il runtime aspettava, il suo health check falliva e Kubernetes riavviava il pod, più e più volte. Il router funzionava: il problema era nel gateway. I nostri limiti di token, in Kuadrant, leggono il numero di token dal campo usage.total_tokens di ogni risposta. Una risposta di chat ha questo campo. La lista dei modelli, una richiesta GET, non ce l’ha. Quando il campo mancava, il filtro Wasm in Envoy falliva e la risposta non finiva mai. Con il keep-alive HTTP, la richiesta successiva sulla stessa connessione restava poi in attesa per sempre. Si riproduce con un solo comando curl e lo stesso URL due volte. La correzione è stata una riga nella nostra policy: contare i token solo per le richieste POST. E la vera lezione: la nostra suite di test apriva una nuova connessione per ogni chiamata, quindi non ha mai visto questo bug. Testate con lo stesso tipo di client che usate in produzione.</aside>
+</section>
+
+<!-- ===================== Wrapping up ===================== -->
+
+<section class="slide slide--content" id="try-it">
+  <header class="head"><p class="eyebrow">Wrapping up</p><h2>Try it on your cluster</h2></header>
+  <div class="row row--wide">
+    <div class="stack" style="width:1000px">
+      <pre class="code">$ git clone https://github.com/sovereign-selfheal/ansible.git
+$ cd ansible
+$ uv sync
+$ uv run ansible-galaxy collection install -r requirements.yml
+$ scripts/run-playbook.sh playbooks/site.yml</pre>
+      <p class="small muted">Tested on Red Hat OpenShift 4.22 on AWS, with two GPU nodes. A CPU-only profile exists, and without a key for an external model everything runs locally.</p>
+      <p class="strong"><a href="https://sovereign-selfheal.github.io/install.html">sovereign-selfheal.github.io/install.html</a></p>
+    </div>
+    <div class="stack stack--28 grow">
+      <div class="stack stack--tight"><p class="num">1 playbook</p><p class="muted">operators, GPU nodes, gateway and the Argo CD seed</p></div>
+      <div class="stack stack--tight"><p class="num">40–60 min</p><p class="muted">for a full install; Argo CD deploys the rest from git</p></div>
+      <div class="stack stack--tight"><p class="num">80+ checks</p><p class="muted">in the validation playbook, on the live cluster</p></div>
+    </div>
+  </div>
+  <footer class="foot"><span>Install guide and requirements on the site</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:00] Se volete provarlo, è tutto su GitHub. Un solo playbook Ansible installa gli operator con versioni fissate, prepara i nodi GPU e il gateway, e crea l’applicazione root in Argo CD. Da lì Argo CD installa ogni workload dal repository gitops. Un’installazione completa richiede circa 40-60 minuti. Poi un playbook di validazione esegue più di 80 controlli sul cluster: operator, isolamento, decisioni di routing, budget e failover. L’abbiamo testato su OpenShift 4.22 su AWS con due nodi GPU. C’è anche un profilo solo CPU, e senza una chiave per un modello esterno tutto gira in locale. La guida di installazione è sul sito.</aside>
+</section>
+
+<section class="slide slide--content" id="takeaways">
+  <header class="head"><p class="eyebrow">Wrapping up</p><h2>Three things to take home</h2></header>
+  <div class="row">
+    <div class="card grow">
+      <p class="big big--accent">1</p>
+      <h3>Decide in the platform</h3>
+      <p class="muted">One endpoint and one policy for every client. Agents do not choose a model.</p>
+    </div>
+    <div class="card grow">
+      <p class="big big--accent">2</p>
+      <h3>Fail closed, and trace it</h3>
+      <p class="muted">When in doubt, the data stays local. Every decision is a log line and a trace.</p>
+    </div>
+    <div class="card grow">
+      <p class="big big--accent">3</p>
+      <h3>Build on open source</h3>
+      <p class="muted">Kubernetes, Gateway API, Kuadrant, vLLM and LiteLLM: code that you can read and change.</p>
+    </div>
+  </div>
+  <footer class="foot"><span>Linux Day Milano 2026</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:00] Tre cose da portare a casa. Primo: mettete la decisione nella piattaforma, non in ogni client. Un endpoint, una policy, e gli agenti non sanno nemmeno quale modello risponde. Secondo: fail-closed, e una trace per ogni decisione. Quando il router ha un dubbio, i dati restano in locale, e potete sempre rispondere alla domanda: quali dati sono usciti dal cluster, e perché? Terzo: costruitelo sull’open source. Kubernetes, Gateway API, Kuadrant, vLLM e LiteLLM sono codice che potete leggere, eseguire e modificare.</aside>
+</section>
+
+<section class="slide slide--alt slide--band slide--plain" id="thanks">
+  <p class="eyebrow">Linux Day Milano 2026</p>
+  <h1>Thank you. Questions?</h1>
+  <div class="stack">
+    <div class="stack stack--tight">
+      <p class="link-big"><a href="https://sovereign-selfheal.github.io/">sovereign-selfheal.github.io</a></p>
+      <p class="muted">the site: router simulator, replays, install guide</p>
+    </div>
+    <div class="stack stack--tight">
+      <p class="link-big"><a href="https://github.com/sovereign-selfheal">github.com/sovereign-selfheal</a></p>
+      <p class="muted">all the code</p>
+    </div>
+  </div>
+  <div class="stack stack--tight">
+    <p class="strong">Amedeo Salvati</p>
+    <p><a href="https://www.linkedin.com/in/amedeos">linkedin.com/in/amedeos</a> · <a href="https://github.com/amedeos">github.com/amedeos</a> · <a href="https://amedeos.github.io/">amedeos.github.io</a> · <a href="https://www.reddit.com/user/amedeos">reddit u/amedeos</a></p>
+  </div>
+  <div class="spacer"></div>
+  <p class="small muted">A community demo, not a Red Hat product. LiteLLM and Presidio are community software, not supported by Red Hat. Routing between a local and an external model is Technology Preview in Red Hat OpenShift AI 3.5. The decision model runs on an unsupported preview image.</p>
+  <aside class="notes" lang="it">[0:30] Grazie. Sul sito trovate il simulatore del router, il replay delle due indagini e la guida di installazione, e tutto il codice è su GitHub. Qui sotto trovate anche i miei contatti. Sono contento di rispondere alle vostre domande. (Dopo questa slide ci sono le slide di riserva: usale per le domande sulle due indagini, sui contesti grandi, sui guasti, sul decision model, sul bug Wasm e sulla riga di log.)</aside>
+</section>
+
+<!-- ===================== Backup ===================== -->
+
+<section class="slide slide--content" id="b-investigations">
+  <header class="head"><p class="eyebrow">Backup</p><h2>Two investigations, side by side</h2></header>
+  <table class="table table--30">
+    <tr><th style="width:30%"><span class="visually-hidden">Aspect</span></th><th style="width:35%">payments · restricted</th><th style="width:35%">rh-reserve · public</th></tr>
+    <tr><td class="strong">LLM turns</td><td class="local">5, all LOCAL (namespace gate)</td><td class="sota">5, all SOTA (all gates pass)</td></tr>
+    <tr><td class="strong">Model</td><td>Qwen3.8 27B on the local GPU</td><td>Gemini 2.5 Pro, external</td></tr>
+    <tr><td class="strong">Input tokens per turn</td><td>8,028 → 22,876</td><td>5,982 → 8,551</td></tr>
+    <tr><td class="strong">Tool calls</td><td>13 (4 failed, then retried)</td><td>4</td></tr>
+    <tr><td class="strong">Incident opened</td><td>after 44 s</td><td>after 26 s</td></tr>
+    <tr><td class="strong">Report written</td><td>after 51 s</td><td>after 39 s</td></tr>
+    <tr><td class="strong">Time in LLM calls</td><td>50 s</td><td>38 s</td></tr>
+  </table>
+  <p class="small muted">We saw failed tool calls only in local runs. We think that the local model writes its first tool calls less precisely, but we have not proven it.</p>
+  <footer class="foot"><span>Two real runs on 16 October 2026 · replay them on the site</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[riserva] Se qualcuno chiede come si confrontano i due tipi di indagine. Partono dalla stessa regola di alert, in due namespace. L’agente di payments ha usato solo il modello locale, perché il suo namespace è restricted: il gate del namespace ha deciso tutti e cinque i turni. Ha avuto bisogno di più chiamate ai tool, quattro sono fallite e sono state ripetute, e il suo contesto è cresciuto fino a quasi 23.000 token. Ha aperto l’incidente dopo 44 secondi. L’agente di rh-reserve ha mandato tutti e cinque i turni al modello esterno, perché ogni gate è passato. Ha usato quattro chiamate ai tool e ha aperto l’incidente dopo 26 secondi. Entrambi gli agenti hanno scritto una diagnosi. Abbiamo visto chiamate ai tool fallite solo nelle esecuzioni locali. La nostra ipotesi è che il modello locale scriva le prime chiamate ai tool in modo meno preciso, ma non l’abbiamo dimostrato.</aside>
+</section>
+
+<section class="slide slide--content" id="b-large-contexts">
+  <header class="head"><p class="eyebrow">Backup</p><h2>Large agent contexts</h2></header>
+  <div class="row">
+    <div class="card grow">
+      <p class="num">150,000</p>
+      <p class="strong">characters: the size cap</p>
+      <p class="muted">Above it, the request stays local and no detector runs. The detectors set this limit, not the external model.</p>
+    </div>
+    <div class="card grow">
+      <p class="num">10 s, 15 s</p>
+      <p class="strong">timeouts that grow</p>
+      <p class="muted">Presidio gets 0.052 s and the decision model 0.11 s per 1,000 characters, up to 10 s and 15 s. A timeout still fails closed.</p>
+    </div>
+    <div class="card grow">
+      <p class="num">2–3 s</p>
+      <p class="strong">with the prefix cache</p>
+      <p class="muted">Agent turns of 67,000 to 120,000 tokens on the local model: 2.2–3.2 s instead of 9.6–23.3 s.</p>
+    </div>
+  </div>
+  <footer class="foot"><span>Measured on the demo cluster, 1–2 October 2026 · docs in the router repository</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[riserva] Se qualcuno chiede delle richieste molto grandi. Gli agenti mandano tutta la conversazione a ogni turno, quindi le loro richieste possono essere enormi. Sopra i 150.000 caratteri il router tiene la richiesta in locale e non esegue nessun detector. Con Gemini come modello esterno, il limite viene dai nostri detector, non dalla finestra di contesto del modello esterno: sopra questa dimensione non riescono a leggere il testo in tempo. I timeout dei detector crescono con il testo: Presidio ha 0,052 secondi e il decision model 0,11 secondi ogni 1.000 caratteri, fino a 10 e 15 secondi. Anche un timeout tiene la richiesta in locale. Sul modello locale abbiamo attivato la prefix cache di vLLM. Siccome un agente manda quasi lo stesso prefisso a ogni turno, i turni da 67.000 a 120.000 token sono passati da 9,6-23,3 secondi a 2,2-3,2 secondi, con un hit rate della cache di circa il 70 percento.</aside>
+</section>
+
+<section class="slide slide--content" id="b-failures">
+  <header class="head"><p class="eyebrow">Backup</p><h2>When something fails</h2></header>
+  <table class="table table--26">
+    <tr><th style="width:40%">Failure</th><th style="width:60%">What happens</th></tr>
+    <tr><td>A detector fails or times out</td><td class="local strong">LOCAL</td></tr>
+    <tr><td>An unexpected error in the hook</td><td><strong class="local">LOCAL</strong>, decided by “fail-closed”</td></tr>
+    <tr><td>The decision model fails</td><td>The local chat model answers the same questions; if it fails too, <strong>LOCAL</strong></td></tr>
+    <tr><td>The external model fails</td><td>LiteLLM falls back to the local model; its tokens do not count in the budget</td></tr>
+    <tr><td>Redis is down</td><td>The SOTA budget is off (fail-open): it controls cost, not privacy</td></tr>
+    <tr><td>Namespace labels not read yet</td><td>Normal routing, with a metric and a log flag; the privacy gate still runs</td></tr>
+  </table>
+  <footer class="foot"><span>Router v0.12.1 · the budget is the only fail-open path (decided on 6 October 2026)</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[riserva] Se qualcuno chiede cosa succede quando un pezzo si rompe. La regola è fail-closed: quando un detector fallisce o va in timeout, o quando l’hook ha un errore imprevisto, la richiesta resta in locale. Il decision model ha un fallback: il modello Qwen locale risponde alle stesse domande come un normale modello di chat; solo se fallisce anche lui, il segnale diventa un errore e la richiesta resta in locale. Quando il modello esterno fallisce, LiteLLM ripiega sul modello locale, quindi l’agente riceve comunque una risposta, e quei token non contano nel budget SOTA. C’è una sola eccezione al fail-closed, e l’abbiamo scelta apposta: se Redis non risponde, il budget SOTA si spegne. Il budget controlla i costi, non la privacy, e i gate della privacy continuano a girare. Ultimo caso: se il router non ha ancora letto le label dei namespace, usa il routing normale, imposta una metrica, e il gate della privacy controlla comunque ogni richiesta.</aside>
+</section>
+
+<section class="slide slide--content" id="b-decision-model">
+  <header class="head"><p class="eyebrow">Backup</p><h2>The decision model</h2></header>
+  <div class="row row--wide">
+    <div class="stack grow" style="gap:20px">
+      <p><strong>What.</strong> DiffusionGemma 26B-A4B (FP8) on vLLM, in structured-read mode, on its own NVIDIA L40S GPU.</p>
+      <p><strong>How.</strong> The router sends the request text and a set of yes/no questions. One forward pass gives a probability for each question.</p>
+      <p><strong>Speed.</strong> About 130 to 160 ms per call in the cluster; about 5.8 s for 40,000 tokens of new text.</p>
+      <p><strong>Fallback.</strong> If it fails, the local Qwen model answers the same questions as a chat model.</p>
+      <p><strong>Status.</strong> Unsupported preview image. Planned as Developer Preview in Red Hat AI Inference Server 3.6 (upstream: vLLM).</p>
+    </div>
+    <div class="stack stack--16" style="width:560px">
+      <p class="label">The questions</p>
+      <div class="grid-pills">
+        <p class="pill">health</p><p class="pill">job</p><p class="pill">legal</p><p class="pill">family</p>
+        <p class="pill">money</p><p class="pill">secret</p><p class="pill">private</p><p class="pill">person</p>
+      </div>
+      <p class="small muted">A “yes” at 0.5 or more adds 0.80 to the privacy score. A ninth question, biz, only shows in the log.</p>
+    </div>
+  </div>
+  <footer class="foot"><span>Measured on the demo cluster, 30 September and 16 October 2026</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[riserva] Se qualcuno chiede del decision model. È DiffusionGemma, 26 miliardi di parametri di cui circa 4 attivi, in FP8, servito da vLLM in modalità structured-read, sulla sua GPU NVIDIA L40S. Il router manda il testo della richiesta e un insieme di domande sì o no. In un solo forward pass il modello dà una probabilità per ogni domanda, quindi abbiamo un numero vero, non una risposta JSON da interpretare. Una chiamata richiede circa 130-160 millisecondi nel cluster, e circa 5,8 secondi per 40.000 token di testo nuovo. Le domande chiedono se il testo parla di salute, lavoro, una questione legale, famiglia, soldi, un segreto, vita privata o una persona specifica. Un sì a 0,5 o più aggiunge 0,80 al punteggio di privacy. Una nona domanda, sui segreti aziendali, compare solo nel log e non cambia mai la decisione. Se il decision model fallisce, il modello Qwen locale risponde alle stesse domande come un normale modello di chat. Da dire chiaramente: gira su un’immagine preview non supportata. È prevista come Developer Preview in Red Hat AI Inference Server 3.6, che upstream è vLLM.</aside>
+</section>
+
+<section class="slide slide--content" id="b-wasm-race">
+  <header class="head"><p class="eyebrow">Backup</p><h2>A gateway pod without its Wasm module</h2></header>
+  <div class="grid-2">
+    <div class="card card--tight">
+      <p class="label">Symptom</p>
+      <p>Right after the install, every request from one client got HTTP 503. Envoy log: wasm_fail_stream.</p>
+    </div>
+    <div class="card card--tight">
+      <p class="label">Cause</p>
+      <p>One gateway pod failed to download the Kuadrant Wasm module at start. Envoy keeps it broken, with no retry.</p>
+    </div>
+    <div class="card card--tight">
+      <p class="label">Why only one client</p>
+      <p>The route is passthrough with source balancing, so one client IP always reaches the same pod.</p>
+    </div>
+    <div class="card card--tight card--local">
+      <p class="label">Fix</p>
+      <p>The install reads the Envoy stats of every gateway pod and replaces a broken one. A validation check tests it.</p>
+    </div>
+  </div>
+  <footer class="foot"><span>Seen on 29 September 2026 · Connectivity Link (Kuadrant) on Envoy</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[riserva] Se qualcuno chiede di altri problemi del gateway. Subito dopo un’installazione, ogni richiesta di un client riceveva un errore HTTP 503, anche le richieste senza API key. La causa: uno dei due pod del gateway, all’avvio, non era riuscito a scaricare dall’operator il modulo Wasm di Kuadrant. Con la failure policy di quel filtro, Envoy tiene il modulo rotto e non riprova, quindi quel pod risponde 503 a tutto. Perché un solo client? La route è passthrough con bilanciamento per sorgente, quindi un IP client arriva sempre allo stesso pod, e per quel client falliva il 100 percento delle richieste. La correzione: l’installazione ora legge le statistiche Envoy di ogni pod del gateway, il contatore wasm.remote_load_fetch_successes, e sostituisce una volta il pod rotto. Un controllo della suite di validazione lo verifica dopo ogni installazione.</aside>
+</section>
+
+<section class="slide slide--content" id="b-log-line">
+  <header class="head"><p class="eyebrow">Backup</p><h2>One log line per decision</h2></header>
+  <pre class="code">[policy-router] {'requested': 'auto', 'routed_to': 'local-fast',
+  'decided_by': 'privacy', 'team': 'research',
+  'reason': 'privacy: score 0.98 (codice_fiscale:0.85, iban:0.80,
+    italian_mobile:0.35) &gt;= 0.70[team=research] -&gt; LOCAL',
+  'trace_id': '6cfadb0fcbd118c371b119384572c6ca', ...}</pre>
+  <table class="table">
+    <tr><th style="width:34%">Metric</th><th style="width:33%">Labels</th><th style="width:33%">Meaning</th></tr>
+    <tr><td class="strong">router_requests_total</td><td>routed_to, decided_by, team</td><td>one per decision</td></tr>
+    <tr><td class="strong">router_privacy_score</td><td>team</td><td>score at the privacy gate</td></tr>
+    <tr><td class="strong">router_sota_tokens_total</td><td>team</td><td>tokens of SOTA answers</td></tr>
+    <tr><td class="strong">router_namespace_decisions_total</td><td>target_namespace, routed_to, source</td><td>restricted-namespace decisions</td></tr>
+  </table>
+  <footer class="foot"><span>The log line and the metric names are a stable interface of the router</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[riserva] Se qualcuno chiede come verificare le decisioni. Ogni decisione è una riga di log che inizia con policy-router, seguita da un dizionario Python: quale modello ha chiesto il client, dove è andata la richiesta, quale gate ha deciso, il team, la motivazione completa e il trace id, così si passa dal log alla trace. La live page e i nostri test end-to-end leggono questa riga, quindi è un’interfaccia stabile del router: cambiarla richiede una nuova versione minor. L’hook esporta anche metriche Prometheus: un contatore per decisione con destinazione, gate e team; un istogramma dei punteggi di privacy; i token del modello esterno per team; e le decisioni sui namespace restricted. Con queste potete sempre rispondere alla domanda: quante richieste sono uscite, da quale team, e perché.</aside>
+</section>
+
+</main>
+
+<div class="presenter" hidden>
+  <div class="presenter-side">
+    <div class="presenter-next">
+      <p class="presenter-label">Next</p>
+      <div class="next-stage"></div>
+    </div>
+    <div class="presenter-info">
+      <p class="presenter-count"></p>
+      <p class="presenter-time"><span class="elapsed">00:00</span><span class="clock"></span></p>
+      <div class="presenter-buttons">
+        <button type="button" data-action="prev">← Previous</button>
+        <button type="button" data-action="next">Next →</button>
+        <button type="button" data-action="reset">Reset timer</button>
+        <button type="button" data-action="smaller" aria-label="Smaller notes">A−</button>
+        <button type="button" data-action="larger" aria-label="Larger notes">A+</button>
+      </div>
+    </div>
+  </div>
+  <div class="presenter-notes">
+    <p class="presenter-label">Notes</p>
+    <p class="presenter-notes-text" lang="it"></p>
+  </div>
+</div>
+
+<div class="help" role="dialog" aria-label="Keys of the slides" hidden>
+  <h2>Keys</h2>
+  <dl>
+    <dt>→ Space PgDn</dt><dd>next slide (↓ too, except on a live slide)</dd>
+    <dt>← PgUp</dt><dd>previous slide (↑ too, except on a live slide)</dd>
+    <dt>↓ ↑ P</dt><dd>on a live slide: next or previous example, play or pause</dd>
+    <dt>Home End</dt><dd>first and last slide</dd>
+    <dt>F</dt><dd>full screen</dd>
+    <dt>S</dt><dd>presenter view in a new window: current and next slide, notes, timer</dd>
+    <dt>N</dt><dd>presenter view in this window</dd>
+    <dt>T</dt><dd>restart the timer of the presenter view</dd>
+    <dt>+ −</dt><dd>larger or smaller notes in the presenter view</dd>
+    <dt>?</dt><dd>this help; Esc closes it</dd>
+  </dl>
+  <p>Inside a live widget, Page Up and Page Down still change the slide, and so do the arrows unless a button of the widget has the focus.</p>
+  <p>PDF: print the page with no margins and with background graphics.</p>
+  <button type="button" class="help-close">Close</button>
+</div>
+
+<p class="visually-hidden" id="deck-status" aria-live="polite"></p>
+
+</body>
+</html>
