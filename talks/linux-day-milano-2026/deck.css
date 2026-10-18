@@ -116,6 +116,11 @@ body { background: var(--frame); color: var(--ui-text); font-family: var(--font-
 .stack--16 { gap: 16px; }
 .stack--28 { gap: 28px; }
 .spacer { flex: 1; }
+/* QR code of the site on the last slide: dark modules on the page color, in its light margin */
+.qr { position: absolute; top: 128px; right: 128px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.qr svg { width: 451px; height: 451px; shape-rendering: crispEdges; }
+.qr-light { fill: var(--bg); }
+.qr-dark { fill: var(--text); }
 .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
 .grid-pills { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 
