@@ -45,6 +45,9 @@ not load the shared fonts in `fonts/`.
 |------|------|--------|
 | Linux Day Milano 2026: *Routing automatico degli LLM su Kubernetes: locale o cloud? Decide il gateway* | 2026-10-24 | [`talks/linux-day-milano-2026/`](talks/linux-day-milano-2026/index.html) |
 
+- **Start.** `talks/<event>/present.sh [port]` (port 8000 by default) serves the repository on
+  localhost only, so nobody on the venue Wi-Fi can reach it. It opens the deck in the default browser
+  and prints the steps for the room. Ctrl+C stops the server.
 - **Keys.** Arrows, Space and Page Up/Down change the slide; Home and End go to the first and last
   slide; F is full screen; ? lists the keys. The URL names the slide (`#gate-privacy`, or `#13`).
 - **Presenter view.** S opens it in a new window: current and next slide, notes, timer and clock. The
