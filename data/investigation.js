@@ -10,7 +10,7 @@ window.DEMO.investigation = {
    "namespace": "payments",
    "data_class": "restricted",
    "alert": {
-    "name": "QuarkusBuggyAppHighErrorRate",
+    "name": "AppHighErrorRate",
     "rule": "the share of HTTP 5xx answers of payments-buggy-app is above 10% for 5 minutes"
    },
    "incident": {
@@ -269,7 +269,7 @@ window.DEMO.investigation = {
    "namespace": "rh-reserve",
    "data_class": "public",
    "alert": {
-    "name": "QuarkusBuggyAppHighErrorRate",
+    "name": "AppHighErrorRate",
     "rule": "the share of HTTP 5xx answers of rh-reserve-buggy-app is above 10% for 5 minutes"
    },
    "incident": {
