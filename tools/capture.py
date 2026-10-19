@@ -32,7 +32,7 @@ ROUTER_NS = "maas-routing"
 TICKETING_NS = "agentic-triage"
 TEMPO = ("observability", "svc/tempo-tempo-gateway", 8080, "router")
 QUERIES = {
-    "alerts": 'ALERTS{alertname="QuarkusBuggyAppHighErrorRate"}',
+    "alerts": 'ALERTS{alertname="AppHighErrorRate"}',
     "translator-replicas": 'kube_deployment_status_replicas{deployment="ogx-alert-translator"}',
 }
 

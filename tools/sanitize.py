@@ -369,7 +369,7 @@ def build_investigation(raw: Path, inv: dict) -> dict:
         "namespace": ns,
         "data_class": inv["data_class"],
         "alert": {
-            "name": "QuarkusBuggyAppHighErrorRate",
+            "name": "AppHighErrorRate",
             "rule": f"the share of HTTP 5xx answers of {BUGGY_APPS.get(ns, 'the buggy app')} is above 10% for 5 minutes",
         },
         "incident": {

@@ -21,7 +21,7 @@ window.DEMO.components = {
       summary: "A third instance in a public namespace. Each namespace has its own agent." },
     { id: "prometheus", zone: "apps", name: "Prometheus", sub: "+ Alertmanager · 5xx alert", kind: "platform",
       x: 20, y: 290, w: 180, h: 60, repo: "gitops",
-      summary: "OpenShift user workload monitoring scrapes the applications. The rule QuarkusBuggyAppHighErrorRate fires, and Alertmanager sends a webhook per namespace." },
+      summary: "OpenShift user workload monitoring scrapes the applications. The rule AppHighErrorRate fires, and Alertmanager sends a webhook per namespace, again every hour while the alert is firing." },
     { id: "translator", zone: "agents", name: "ogx-alert-translator", sub: "webhook → agent · KEDA", kind: "app",
       x: 238, y: 72, w: 204, h: 52, repo: "ogx-alert-translator",
       summary: "Turns an Alertmanager webhook into a prompt and calls the agent of the alert's namespace. KEDA scales it from zero." },
