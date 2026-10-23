@@ -296,13 +296,13 @@
     <div class="card grow">
       <p class="to-local">→ LOCAL</p>
       <h3>Budget used</h3>
-      <p>The agent used its 30,000 SOTA tokens in 5 minutes. It goes on with the local model, with no HTTP 429.</p>
+      <p>The agent used its 80,000 SOTA tokens in 5 minutes. It goes on with the local model, with no HTTP 429.</p>
       <div class="spacer"></div>
-      <p class="reason">SOTA budget of tier agents used (31261/30000 tokens in 5m)</p>
+      <p class="reason">SOTA budget of tier agents-payments used (80412/80000 tokens in 5m)</p>
     </div>
   </div>
-  <footer class="foot"><span>Values from the demo policy; reasons copied from the router log</span><span>sovereign-selfheal.github.io</span></footer>
-  <aside class="notes" lang="it">[1:30] Il gate due riguarda l’efficienza. Tre tipi di richiesta restano in locale. Primo, le domande brevi e semplici: fino a 280 caratteri e 40 parole, senza parole chiave come analyze o compare. Il modello locale risponde bene e in fretta. Secondo, le richieste troppo grandi: oltre 150.000 caratteri. Gli agenti possono mandare contesti molto grandi, e sopra questa dimensione i nostri detector della privacy avrebbero bisogno di troppo tempo. Quindi la richiesta resta in locale e nessun detector la legge. Terzo, il budget di token. Ogni agente ha un budget di token per il modello esterno: 30.000 token in una finestra mobile di cinque minuti. Un’applicazione business-critical può avere un budget più grande. Quando il budget è finito, l’agente non riceve un errore: continua semplicemente con il modello locale. Il gateway ha comunque un limite rigido di token per team, e sopra quel limite il client riceve un HTTP 429. Tutte le altre richieste, lunghe o complesse, passano al gate successivo.</aside>
+  <footer class="foot"><span>Values from the demo policy; reasons in the format of the router log</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:30] Il gate due riguarda l’efficienza. Tre tipi di richiesta restano in locale. Primo, le domande brevi e semplici: fino a 280 caratteri e 40 parole, senza parole chiave come analyze o compare. Il modello locale risponde bene e in fretta. Secondo, le richieste troppo grandi: oltre 150.000 caratteri. Gli agenti possono mandare contesti molto grandi, e sopra questa dimensione i nostri detector della privacy avrebbero bisogno di troppo tempo. Quindi la richiesta resta in locale e nessun detector la legge. Terzo, il budget di token. Ogni agente ha un budget di token per il modello esterno: 80.000 token in una finestra mobile di cinque minuti. Un’indagine ne usa da 30.000 a 40.000, quindi bastano per circa due indagini. Un’applicazione business-critical può avere un budget più grande. Quando il budget è finito, l’agente non riceve un errore: continua semplicemente con il modello locale. Il gateway ha comunque un limite rigido di token per team, e sopra quel limite il client riceve un HTTP 429. Tutte le altre richieste, lunghe o complesse, passano al gate successivo.</aside>
 </section>
 
 <section class="slide slide--content" id="gate-privacy">
@@ -343,7 +343,7 @@
     <tr><th style="width:30%">Team (from the API key)</th><th style="width:20%">Models</th><th style="width:25%">Gateway token limit</th><th style="width:25%">SOTA budget</th></tr>
     <tr><td class="strong">legal</td><td class="local strong">local only</td><td>20,000 / 5 min</td><td>none</td></tr>
     <tr><td class="strong">research</td><td>local + SOTA</td><td>100,000 / 1 min</td><td>none</td></tr>
-    <tr><td><strong>one per agent</strong>, e.g. agents-payments</td><td>local + SOTA</td><td>200,000 / 5 min</td><td>30,000 / 5 min</td></tr>
+    <tr><td><strong>one per agent</strong>, e.g. agents-payments</td><td>local + SOTA</td><td>200,000 / 5 min</td><td>80,000 / 5 min</td></tr>
     <tr><td class="strong">agents-critical</td><td>local + SOTA</td><td>600,000 / 5 min</td><td>150,000 / 5 min</td></tr>
   </table>
   <div class="row">
