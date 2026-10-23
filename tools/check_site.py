@@ -28,6 +28,9 @@ CSP_REQUIRED = {"default-src": ["'self'"], "script-src": ["'self'"], "connect-sr
 FORBIDDEN_DATA_KEYS = {"prompt", "answer", "description", "short_description", "content", "messages"}
 PNG_TEXT = {b"tEXt", b"iTXt", b"zTXt", b"eXIf", b"tIME"}
 DATA_KEYS = {"schema", "captured_at", "router_version", "cluster"}
+# A recording shown at a talk shows a real cluster: .gitignore keeps it on the speaker's laptop, so a
+# <video> of a talk may name a file that is not in the repository.
+LOCAL_ONLY_VIDEO = "talks/*/*.mp4"
 
 problems: list[str] = []
 
@@ -97,7 +100,9 @@ def check_pages() -> None:
                 elif not external:
                     path = resolve(f, val.split("#")[0].split("?")[0])
                     anchor = val.partition("#")[2]
-                    if not path.is_file():
+                    local_only = (tag == "video" and path.is_relative_to(ROOT)
+                                  and path.relative_to(ROOT).match(LOCAL_ONLY_VIDEO))
+                    if not path.is_file() and not local_only:
                         fail(f"{name}: <{tag} {attr}={val!r}>: the file does not exist")
                     elif anchor and path.suffix == ".html" and anchor not in parsed.get(path, Page()).ids:
                         fail(f"{name}: <{tag} {attr}={val!r}>: no id {anchor!r} in {path.name}")

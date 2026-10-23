@@ -36,7 +36,9 @@ install guide. It installs nothing and changes no cluster.
   (no build step, the same Content Security Policy, nothing from other sites, nothing secret: the
   branch is public on GitHub). Two exceptions: a deck has one light theme, because it is projected,
   and its speaker notes (`<aside class="notes">`, last child of each slide) may be in the language of
-  the talk. The slide text stays in English. `check_site.py` also checks `talks/*/*.html`.
+  the talk. The slide text stays in English. `check_site.py` also checks `talks/*/*.html`. A
+  recording of a cluster (`talks/<event>/*.mp4`, played by `live-video.html`) never goes into git:
+  `.gitignore` keeps it on the speaker's laptop.
 - **Run `tools/check_site.py` before every commit.** The CI runs it too. Leak patterns live in
   `tools/leaks.py`, shared by `sanitize.py` and `check_site.py`; keep them generic (no name of a
   single cluster).

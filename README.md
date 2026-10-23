@@ -60,6 +60,10 @@ not load the shared fonts in `fonts/`.
   slide. On a live slide, ↓ ↑ change the example and P plays or pauses, also from the presenter
   window, which shows a note instead: the widget runs once, on the audience screen. Inside the frame,
   Page Up and Page Down still change the slide.
+- **Recording.** `live-video.html` plays `demo-video.mp4`, a recording of the demo cluster. The file
+  is not in the repository (`.gitignore`), because it shows a real cluster: copy it into the talk
+  folder before the talk. `present.sh` warns when it is missing. P plays or pauses, ↓ ↑ jump 10
+  seconds.
 - **PDF.** Print the page (one slide per page) with no margins and with background graphics on.
 
 ## Refresh the data

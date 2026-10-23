@@ -2,3 +2,5 @@
 __pycache__/
 *.pyc
 .DS_Store
+# A recording shown at a talk shows a real cluster: it stays on the speaker's laptop.
+talks/*/*.mp4

@@ -1,15 +1,16 @@
-// One widget of the site alone in the frame of a slide (live-*.html).
+// One widget of the site alone in the frame of a slide (live-*.html), or the recording of the demo.
 // It scales the widget to the frame (whole, and as large as possible), passes the slide keys (also
 // those of a presenter's remote) to the deck around the frame, and runs the actions that the deck
 // sends: next or previous example, play or pause.
 (function () {
   "use strict";
-  const box = document.querySelector(".fit");
+  const box = document.querySelector(".fit");  // none on the recording page: the video fits by CSS
   const MAX_SCALE = 1.6;
   const TARGET = location.protocol === "file:" ? "*" : location.origin;
   let tallest = 0;  // the widget changes height with its content: fit the tallest state, so the scale stays still
 
   function fit() {
+    if (!box) return;
     const w = box.offsetWidth;
     tallest = Math.max(tallest, box.offsetHeight);
     if (!w || !tallest) return;
@@ -22,7 +23,7 @@
 
   window.addEventListener("resize", fit);
   window.addEventListener("load", fit);
-  if ("ResizeObserver" in window) new ResizeObserver(fit).observe(box);
+  if (box && "ResizeObserver" in window) new ResizeObserver(fit).observe(box);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
   fit();
 
@@ -53,10 +54,30 @@
     chips[(now + step + chips.length) % chips.length].click();
     return true;
   }
+  // The recording (live-video.html): P plays or pauses, ↓ ↑ jump 10 seconds. It is muted, so the
+  // browser lets it play from a key pressed in the deck.
+  const video = document.querySelector("video");
+  function seek(seconds) {
+    if (!video) return false;
+    video.currentTime = Math.max(0, Math.min(video.duration || 0, video.currentTime + seconds));
+    return true;
+  }
+  function playVideo() {
+    if (!video) return false;
+    if (video.paused || video.ended) video.play().catch(() => { /* no file: the page says so */ });
+    else video.pause();
+    return true;
+  }
+  if (video) {
+    const missing = () => { document.getElementById("video-missing").hidden = false; };
+    video.addEventListener("error", missing);
+    if (video.error) missing();
+  }
+
   const ACTIONS = {
-    next: () => press("#sim-next") || chip(1),
-    prev: () => press("#sim-prev") || chip(-1),
-    play: () => press("#sim-play") || press("#replay-play"),
+    next: () => press("#sim-next") || chip(1) || seek(10),
+    prev: () => press("#sim-prev") || chip(-1) || seek(-10),
+    play: () => press("#sim-play") || press("#replay-play") || playVideo(),
   };
   window.addEventListener("message", (e) => {
     if (location.protocol !== "file:" && e.origin !== location.origin) return;

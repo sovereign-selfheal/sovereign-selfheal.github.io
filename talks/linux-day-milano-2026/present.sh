@@ -18,6 +18,9 @@ command -v python3 >/dev/null || { echo "FAIL  python3 is not installed"; exit 1
 branch="$(git -C "$root" branch --show-current 2>/dev/null)"
 [ -z "$(git -C "$root" status --porcelain -- "$deck" 2>/dev/null)" ] || echo "WARN  local changes in $deck"
 echo "OK    $deck (${branch:-no git}) $(git -C "$root" log -1 --format='%h %s' 2>/dev/null | cut -c1-70)"
+if [ -f "$deck_dir/live-video.html" ] && [ ! -f "$deck_dir/demo-video.mp4" ]; then
+  echo "WARN  no $deck/demo-video.mp4 (not in git): the recording slide stays empty"
+fi
 
 if python3 -c 'import socket, sys; socket.create_connection(("localhost", int(sys.argv[1])), timeout=1)' "$port" 2>/dev/null; then
   echo "FAIL  port $port is in use: stop the other server, or run  $0 $((port + 1))"
@@ -63,6 +66,7 @@ Deck  $url
 
   Keys: arrows or Space move, ? help, T restarts the timer, + and - change the notes size.
   Live slides: down and up arrows change the example, P plays or pauses.
+  Recording slide: P plays or pauses, down and up arrows jump 10 seconds.
 
 Ctrl+C stops the server.
 EOF

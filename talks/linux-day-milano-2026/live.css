@@ -5,3 +5,9 @@ html, body { height: 100%; margin: 0; overflow: hidden; }
 .controls .hint { display: none; }          /* the keys of the slides are in the help of the deck */
 .replay-grid { grid-template-columns: minmax(0, 1fr); }
 .events { max-height: 300px; }
+
+/* The recording of the demo (live-video.html): the whole video, as large as the frame, on dark bars. */
+.video-page { background: var(--text); }
+.video-page video { display: block; width: 100%; height: 100%; object-fit: contain; }
+.video-missing { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; margin: 0; padding: 48px; text-align: center; font-size: 32px; color: var(--bg); }
+.video-missing[hidden] { display: none; }

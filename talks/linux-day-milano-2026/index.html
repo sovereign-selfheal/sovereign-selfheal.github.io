@@ -430,33 +430,43 @@
   <div class="stack" style="gap:12px">
     <p class="label">What to watch</p>
     <div class="row">
-      <p class="card card--tight grow"><span><strong>1</strong> · the live page, decision by decision</span></p>
-      <p class="card card--tight grow"><span><strong>2</strong> · one trace in the OpenShift console</span></p>
+      <p class="card card--tight grow"><span><strong>1</strong> · the dashboard, agent by agent</span></p>
+      <p class="card card--tight grow"><span><strong>2</strong> · the alert and the agent at work</span></p>
       <p class="card card--tight grow"><span><strong>3</strong> · the incident that the agent opens</span></p>
     </div>
   </div>
-  <footer class="foot"><span>No cluster? The next two slides run the simulator and the replay, also offline.</span><span>sovereign-selfheal.github.io</span></footer>
-  <aside class="notes" lang="it">[10:00, demo] Adesso ve lo faccio vedere in funzione. Apri la live page e la console di OpenShift una accanto all’altra. Passo 1: nel namespace payments, aspetta l’alert AppHighErrorRate (più del 10% di risposte HTTP 5xx per 5 minuti), oppure avvia l’agente dalla sua pagina web. Alertmanager rinvia l’alert una volta all’ora: se non vuoi aspettare, avvia l’agente dalla pagina web. L’alert va all’ogx-alert-translator, che avvia l’agente del namespace payments. Sulla live page ogni turno LLM dell’agente di payments compare con il gate del namespace e la GPU locale. Passo 2: apri una di queste trace in Observe, Traces. Lo span router.chain ha solo il figlio gate.namespace: nessun altro gate è stato eseguito. Passo 3: mostra l’incidente che l’agente ha aperto nel sistema di ticketing. Passo 4: fai lo stesso per rh-reserve. I suoi turni vanno al modello esterno, perché passano tutti e quattro i gate. Passo opzionale: dalla live page segna rh-reserve come restricted e mostra che i turni successivi restano in locale. Piano B, se il cluster non è disponibile: le due slide successive contengono il simulatore del router e il replay delle due indagini, presi dal sito; funzionano anche offline, da una copia locale del repo servita con python3 -m http.server. Prima del talk: crea il cluster il giorno prima, disattiva lo stop automatico e controlla che entrambi i nodi GPU siano pronti; trovare capacità GPU su AWS può richiedere ore.</aside>
+  <footer class="foot"><span>Recorded by Matteo Grimaldi on the demo cluster, 21 October 2026</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[1:00, demo] Adesso vi faccio vedere la demo. Ci sono due namespace, ognuno con un’app che restituisce errori e con il suo agente. payments è restricted: ogni turno LLM del suo agente resta sulla GPU locale, e decide il gate del namespace. rh-reserve è public: i turni puliti e complessi vanno al modello esterno, perché passano tutti e quattro i gate. Guardate tre cose: la dashboard per agente, l’alert con l’agente al lavoro e l’incidente che l’agente apre. La demo è una registrazione fatta da Matteo Grimaldi sul cluster di demo, il 21 ottobre: così non dipende dalla rete della sala. Dopo il video passo al simulatore e al replay, che sono interattivi.</aside>
+</section>
+
+<section class="slide slide--live" id="demo-video">
+  <header class="head"><p class="eyebrow">Demo</p><h2>The demo on the cluster, recorded</h2></header>
+  <div class="live">
+    <iframe data-src="live-video.html" title="Recording of the demo on the cluster"></iframe>
+    <p class="live-note">The recording plays on the audience screen. P plays or pauses, ↓ ↑ jump 10 seconds.</p>
+    <p class="live-print">Recording of the demo cluster, 21 October 2026: shown at the talk only</p>
+  </div>
+  <aside class="notes" lang="it">[4:30] Premi P per far partire il video: dura 3 minuti e 45 secondi e non ha audio, lo commenti tu. P lo mette in pausa, le frecce giù e su saltano di 10 secondi. Funziona anche dalla finestra del presentatore: lì vedi solo un avviso, il video gira sullo schermo del pubblico. Se sul proiettore compare l’avviso “No recording here”, manca il file demo-video.mp4 nella cartella del talk. I tempi del video: 0:00, la dashboard nella sezione By agent, tutta a zero, e il sistema di ticketing ancora vuoto. 0:20, namespace payments: i log dell’app con errori HTTP 500 e 503. 0:40, l’alert AppHighErrorRate: più del 10% di risposte 5xx per 5 minuti. 0:50, l’ogx-alert-translator avvia l’agente di payments; nei log vedete la POST /trigger e le chiamate ai tool, OpenShift MCP e Prometheus MCP. 1:27, per pochi secondi, l’animazione della catena dei gate. 1:30, la dashboard: le risposte di payments restano tutte nel cluster, perché decide il gate del namespace. 1:45, l’incidente che l’agente ha aperto, con la causa per ogni endpoint e la correzione consigliata. 2:05, lo stesso per rh-reserve, il namespace public: log dell’app, alert, agente. 3:15, la dashboard: i turni di rh-reserve vanno al modello esterno. 3:25, il secondo incidente. Alla fine il video resta fermo sull’ultima immagine.</aside>
 </section>
 
 <section class="slide slide--live" id="demo-simulator">
-  <header class="head"><p class="eyebrow">Demo · plan B</p><h2>The router simulator, live</h2></header>
+  <header class="head"><p class="eyebrow">Demo</p><h2>The router simulator, live</h2></header>
   <div class="live">
     <iframe data-src="live-simulator.html" title="Router simulator of the demo site"></iframe>
     <p class="live-note">The simulator runs on the audience screen. ↓ ↑ change the example, P pauses or plays.</p>
     <p class="live-print">Live on sovereign-selfheal.github.io: “Watch the router decide”</p>
   </div>
-  <aside class="notes" lang="it">[piano B] Se il cluster non risponde, uso il simulatore del sito, qui dentro. Ogni esempio è una richiesta vera del cluster di demo, con le motivazioni vere prese dal log del router. Il simulatore scorre da solo. Con le frecce giù e su cambi esempio e con P lo metti in pausa o lo fai ripartire, anche dalla finestra del presentatore: lì vedi solo un avviso, il simulatore gira sullo schermo del pubblico. Fai vedere almeno tre casi: il namespace restricted, i dati personali e la richiesta pulita e complessa che va al modello esterno. Puoi anche cliccare dentro il riquadro sul proiettore: Pagina giù, Pagina su e le frecce destra e sinistra cambiano comunque slide.</aside>
+  <aside class="notes" lang="it">[2:30] Dopo il video, il simulatore del sito, qui dentro. Ogni esempio è una richiesta vera del cluster di demo, con le motivazioni vere prese dal log del router. Il simulatore scorre da solo. Con le frecce giù e su cambi esempio e con P lo metti in pausa o lo fai ripartire, anche dalla finestra del presentatore: lì vedi solo un avviso, il simulatore gira sullo schermo del pubblico. Fai vedere almeno tre casi: il namespace restricted, i dati personali e la richiesta pulita e complessa che va al modello esterno. Puoi anche cliccare dentro il riquadro sul proiettore: Pagina giù, Pagina su e le frecce destra e sinistra cambiano comunque slide.</aside>
 </section>
 
 <section class="slide slide--live" id="demo-replay">
-  <header class="head"><p class="eyebrow">Demo · plan B</p><h2>The investigation replay, live</h2></header>
+  <header class="head"><p class="eyebrow">Demo</p><h2>The investigation replay, live</h2></header>
   <div class="live">
     <iframe data-src="live-replay.html" title="Investigation replay of the demo site"></iframe>
     <p class="live-note">The replay runs on the audience screen. ↓ ↑ change the investigation, P plays it again.</p>
     <p class="live-print">Live on sovereign-selfheal.github.io: “From the alert to the incident”</p>
   </div>
-  <aside class="notes" lang="it">[piano B] Il replay delle due indagini vere del 16 ottobre. Parte da solo quando arrivi su questa slide; con P, o con il pulsante Replay, lo rifai. Con le frecce giù e su passi da un’indagine all’altra, e la nuova parte subito. Prima payments, il namespace restricted: ogni turno LLM resta sulla GPU locale, deciso dal gate del namespace, e l’incidente arriva dopo 44 secondi. Poi rh-reserve, il namespace public: i suoi turni vanno al modello esterno. Il cerchio vuoto è una chiamata a un tool che è fallita: l’agente vede l’errore e la ripete. I tasti funzionano anche dalla finestra del presentatore.</aside>
+  <aside class="notes" lang="it">[2:00] Il replay delle due indagini vere del 16 ottobre. Parte da solo quando arrivi su questa slide; con P, o con il pulsante Replay, lo rifai. Con le frecce giù e su passi da un’indagine all’altra, e la nuova parte subito. Prima payments, il namespace restricted: ogni turno LLM resta sulla GPU locale, deciso dal gate del namespace, e l’incidente arriva dopo 44 secondi. Poi rh-reserve, il namespace public: i suoi turni vanno al modello esterno. Il cerchio vuoto è una chiamata a un tool che è fallita: l’agente vede l’errore e la ripete. I tasti funzionano anche dalla finestra del presentatore.</aside>
 </section>
 
 <!-- ===================== Lessons learned ===================== -->
