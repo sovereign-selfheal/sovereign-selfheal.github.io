@@ -314,7 +314,7 @@
     <div class="stack grow">
       <div class="stack stack--tight"><p class="strong">Rules</p><p class="muted">Regular expressions with validators: payment cards with the Luhn check, IBAN, Italian tax codes.</p></div>
       <div class="stack stack--tight"><p class="strong">Lexicons</p><p class="muted">Lists of words for health, credentials and other sensitive topics.</p></div>
-      <div class="stack stack--tight"><p class="strong">Decision model</p><p class="muted">Yes/no questions about the text, in one forward pass on a second GPU: a person? health? money? legal?</p></div>
+      <div class="stack stack--tight"><p class="strong">Decision model (systemone)</p><p class="muted">Yes/no questions about the text, in one forward pass on a second GPU: a person? health? money? legal?</p></div>
       <p class="strong">Score ≥ team threshold → LOCAL. A detector fails → LOCAL.</p>
     </div>
     <div class="stack" style="width:620px">
@@ -324,14 +324,14 @@
         <p class="result">score 0.98 ≥ 0.70 → LOCAL, in 0.3 ms</p>
       </div>
       <div class="card card--tight">
-        <p class="label">The decision model finds a person</p>
+        <p class="label">The decision model (systemone) finds a person</p>
         <p class="small">“Analyze the career options of Mario Rossi, an Italian engineer who lives in Milan.”</p>
         <p class="result">person: yes (1.00) → score 0.80 ≥ 0.70 → LOCAL</p>
       </div>
     </div>
   </div>
   <footer class="foot"><span>Synthetic test prompts of the validation suite · threshold 0.70 (research)</span><span>sovereign-selfheal.github.io</span></footer>
-  <aside class="notes" lang="it">[2:00] Il gate tre è il gate della privacy, ed è l’ultimo prima che i dati escano dal cluster. Legge tutta la richiesta: ogni messaggio, l’output dei tool e gli argomenti delle chiamate ai tool, non solo l’ultima domanda. Tre tipi di detector sommano un punteggio di privacy. Le regole: espressioni regolari con validatori. Per esempio, il numero di una carta di pagamento deve passare il controllo di Luhn, e controlliamo anche IBAN e codici fiscali. I lessici: liste di parole su salute, credenziali e altri temi sensibili. E un decision model: un secondo modello piccolo, sulla sua GPU. Il router gli fa domande sì o no sul testo. Parla di una persona privata? Di salute, di soldi, di una questione legale? Il modello risponde a ogni domanda con una probabilità, in un solo forward pass, in circa 150 millisecondi. A destra vedete due richieste di test. Nella prima, le regole trovano un codice fiscale e un IBAN. Il punteggio è 0,98, sopra la soglia del team research, quindi la richiesta resta in locale. Le sole regole hanno impiegato 0,3 millisecondi. Nella seconda non c’è nessun identificativo, solo una persona e qualche fatto privato. Le regole non vedono niente, ma il decision model risponde sì alla domanda sulla persona, quindi anche questa richiesta resta in locale. Ogni team ha la sua soglia: legal è molto severo, con 0,30; research è più aperto, con 0,70; gli altri team usano 0,50. E se un detector fallisce, la richiesta resta in locale.</aside>
+  <aside class="notes" lang="it">[2:00] Il gate tre è il gate della privacy, ed è l’ultimo prima che i dati escano dal cluster. Legge tutta la richiesta: ogni messaggio, l’output dei tool e gli argomenti delle chiamate ai tool, non solo l’ultima domanda. Tre tipi di detector sommano un punteggio di privacy. Le regole: espressioni regolari con validatori. Per esempio, il numero di una carta di pagamento deve passare il controllo di Luhn, e controlliamo anche IBAN e codici fiscali. I lessici: liste di parole su salute, credenziali e altri temi sensibili. E un decision model, un systemone: un secondo modello piccolo, sulla sua GPU. Il router lo chiama con l’API systemone e gli fa domande sì o no sul testo. Parla di una persona privata? Di salute, di soldi, di una questione legale? Il modello risponde a ogni domanda con una probabilità, in un solo forward pass, in circa 150 millisecondi. A destra vedete due richieste di test. Nella prima, le regole trovano un codice fiscale e un IBAN. Il punteggio è 0,98, sopra la soglia del team research, quindi la richiesta resta in locale. Le sole regole hanno impiegato 0,3 millisecondi. Nella seconda non c’è nessun identificativo, solo una persona e qualche fatto privato. Le regole non vedono niente, ma il decision model risponde sì alla domanda sulla persona, quindi anche questa richiesta resta in locale. Ogni team ha la sua soglia: legal è molto severo, con 0,30; research è più aperto, con 0,70; gli altri team usano 0,50. E se un detector fallisce, la richiesta resta in locale.</aside>
 </section>
 
 <section class="slide slide--content" id="gate-tiering">
@@ -663,7 +663,7 @@ $ scripts/run-playbook.sh playbooks/site.yml</pre>
   <header class="head"><p class="eyebrow">Backup</p><h2>The decision model</h2></header>
   <div class="row row--wide">
     <div class="stack grow" style="gap:20px">
-      <p><strong>What.</strong> DiffusionGemma 26B-A4B (FP8) on vLLM, in structured-read mode, on its own NVIDIA L40S GPU.</p>
+      <p><strong>What.</strong> DiffusionGemma 26B-A4B (FP8) on vLLM, in structured-read mode, behind the systemone API, on its own NVIDIA L40S GPU.</p>
       <p><strong>How.</strong> The router sends the request text and a set of yes/no questions. One forward pass gives a probability for each question.</p>
       <p><strong>Speed.</strong> About 130 to 160 ms per call in the cluster; about 5.8 s for 40,000 tokens of new text.</p>
       <p><strong>Fallback.</strong> If it fails, the local Qwen model answers the same questions as a chat model.</p>
@@ -679,7 +679,7 @@ $ scripts/run-playbook.sh playbooks/site.yml</pre>
     </div>
   </div>
   <footer class="foot"><span>Measured on the demo cluster, 30 September and 16 October 2026</span><span>sovereign-selfheal.github.io</span></footer>
-  <aside class="notes" lang="it">[riserva] Se qualcuno chiede del decision model. È DiffusionGemma, 26 miliardi di parametri di cui circa 4 attivi, in FP8, servito da vLLM in modalità structured-read, sulla sua GPU NVIDIA L40S. Il router manda il testo della richiesta e un insieme di domande sì o no. In un solo forward pass il modello dà una probabilità per ogni domanda, quindi abbiamo un numero vero, non una risposta JSON da interpretare. Una chiamata richiede circa 130-160 millisecondi nel cluster, e circa 5,8 secondi per 40.000 token di testo nuovo. Le domande chiedono se il testo parla di salute, lavoro, una questione legale, famiglia, soldi, un segreto, vita privata o una persona specifica. Un sì a 0,5 o più aggiunge 0,80 al punteggio di privacy. Una nona domanda, sui segreti aziendali, compare solo nel log e non cambia mai la decisione. Se il decision model fallisce, il modello Qwen locale risponde alle stesse domande come un normale modello di chat. Da dire chiaramente: gira su un’immagine preview non supportata. È prevista come Developer Preview in Red Hat AI Inference Server 3.6, che upstream è vLLM.</aside>
+  <aside class="notes" lang="it">[riserva] Se qualcuno chiede del decision model. È DiffusionGemma, 26 miliardi di parametri di cui circa 4 attivi, in FP8, servito da vLLM in modalità structured-read dietro l’API systemone, sulla sua GPU NVIDIA L40S. Il router manda il testo della richiesta e un insieme di domande sì o no. In un solo forward pass il modello dà una probabilità per ogni domanda, quindi abbiamo un numero vero, non una risposta JSON da interpretare. Una chiamata richiede circa 130-160 millisecondi nel cluster, e circa 5,8 secondi per 40.000 token di testo nuovo. Le domande chiedono se il testo parla di salute, lavoro, una questione legale, famiglia, soldi, un segreto, vita privata o una persona specifica. Un sì a 0,5 o più aggiunge 0,80 al punteggio di privacy. Una nona domanda, sui segreti aziendali, compare solo nel log e non cambia mai la decisione. Se il decision model fallisce, il modello Qwen locale risponde alle stesse domande come un normale modello di chat. Da dire chiaramente: gira su un’immagine preview non supportata. È prevista come Developer Preview in Red Hat AI Inference Server 3.6, che upstream è vLLM.</aside>
 </section>
 
 <section class="slide slide--content" id="b-wasm-race">
