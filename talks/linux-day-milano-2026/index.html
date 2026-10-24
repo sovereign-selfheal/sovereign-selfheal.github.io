@@ -496,35 +496,7 @@
   </div>
   <p class="strong">With the decision model on, we turned Presidio NER off: false positives on agent contexts went from 18 to 0, with no new leaks in our evaluation.</p>
   <footer class="foot"><span>Source: router evaluation of 5 October 2026 (docs in the router repository)</span><span>sovereign-selfheal.github.io</span></footer>
-  <aside class="notes" lang="it">[2:00] Ora alcune lezioni da un cluster vero. La prima riguarda i falsi positivi. I nostri primi detector erano tarati su prompt scritti da persone. Le richieste degli agenti sono diverse: sono piene di log, metriche e parole tecniche. Tre esempi. Un valore di Prometheus: 0,024836864197530867. Le sue cifre passano il controllo di Luhn, quindi la nostra regola ci ha visto una carta di pagamento, e la richiesta è rimasta in locale. La correzione: la regola delle carte ora ignora i numeri decimali. Secondo: Presidio, il riconoscitore di entità, leggeva parole tecniche singole come Kafka o Paxos come nomi di persona. La correzione: ora una persona deve avere almeno due parole, quindi un nome completo come Mario Rossi conta ancora. Terzo: il prompt stesso dell’agente aveva un titolo, Diagnosis Summary, e la parola diagnosis era nel nostro lessico della salute. Così ogni richiesta dell’agente sembrava contenere dati sanitari. Abbiamo tolto la parola. Un falso positivo non è un rischio per la privacy, perché i dati restano in locale. Però rende inutile il modello esterno per gli agenti. Alla fine, con il decision model attivo, abbiamo spento il riconoscimento di entità di Presidio. Sul nostro insieme di contesti degli agenti i falsi positivi sono scesi da 18 a 0, e la valutazione non ha mostrato nuove fughe di dati.</aside>
-</section>
-
-<section class="slide slide--content" id="gateway-bug">
-  <header class="head"><p class="eyebrow">Lessons learned</p><h2>A bug in the gateway</h2></header>
-  <p>The agent runtime asked for the model list twice. The second call never came back.</p>
-  <div class="row row--wide">
-    <pre class="code" style="width:760px">$ curl --http1.1 -H "$AUTH" \
-    $URL/v1/models $URL/v1/models
-<span class="dim">first request:  HTTP 200</span>
-<span class="dim">second request: no answer, timeout</span></pre>
-    <ol class="grow">
-      <li>The token limit reads usage.total_tokens in every answer.</li>
-      <li>A GET of the model list has no usage. The Wasm filter fails, and the answer never ends.</li>
-      <li>The next request on the same keep-alive connection waits forever.</li>
-    </ol>
-  </div>
-  <div class="row">
-    <div class="card card--tight card--local grow">
-      <p class="strong">Fix: count tokens only for POST requests</p>
-      <p class="small mono">when: request.method == 'POST'</p>
-    </div>
-    <div class="card card--tight grow">
-      <p class="strong">Lesson: test like production</p>
-      <p class="small">Our test suite opened a new connection for every call, so it never saw the bug.</p>
-    </div>
-  </div>
-  <footer class="foot"><span>Connectivity Link 1.4.3 (Kuadrant) · fixed in our policy on 2 Oct 2026</span><span>sovereign-selfheal.github.io</span></footer>
-  <aside class="notes" lang="it">[2:00] La seconda lezione riguarda il gateway. Il runtime del nostro agente partiva, chiedeva al router la lista dei modelli, poi la chiedeva di nuovo, e la seconda chiamata non tornava mai. Il runtime aspettava, il suo health check falliva e Kubernetes riavviava il pod, più e più volte. Il router funzionava: il problema era nel gateway. I nostri limiti di token, in Kuadrant, leggono il numero di token dal campo usage.total_tokens di ogni risposta. Una risposta di chat ha questo campo. La lista dei modelli, una richiesta GET, non ce l’ha. Quando il campo mancava, il filtro Wasm in Envoy falliva e la risposta non finiva mai. Con il keep-alive HTTP, la richiesta successiva sulla stessa connessione restava poi in attesa per sempre. Si riproduce con un solo comando curl e lo stesso URL due volte. La correzione è stata una riga nella nostra policy: contare i token solo per le richieste POST. E la vera lezione: la nostra suite di test apriva una nuova connessione per ogni chiamata, quindi non ha mai visto questo bug. Testate con lo stesso tipo di client che usate in produzione.</aside>
+  <aside class="notes" lang="it">[2:00] Ora una lezione da un cluster vero: i falsi positivi. I nostri primi detector erano tarati su prompt scritti da persone. Le richieste degli agenti sono diverse: sono piene di log, metriche e parole tecniche. Tre esempi. Un valore di Prometheus: 0,024836864197530867. Le sue cifre passano il controllo di Luhn, quindi la nostra regola ci ha visto una carta di pagamento, e la richiesta è rimasta in locale. La correzione: la regola delle carte ora ignora i numeri decimali. Secondo: Presidio, il riconoscitore di entità, leggeva parole tecniche singole come Kafka o Paxos come nomi di persona. La correzione: ora una persona deve avere almeno due parole, quindi un nome completo come Mario Rossi conta ancora. Terzo: il prompt stesso dell’agente aveva un titolo, Diagnosis Summary, e la parola diagnosis era nel nostro lessico della salute. Così ogni richiesta dell’agente sembrava contenere dati sanitari. Abbiamo tolto la parola. Un falso positivo non è un rischio per la privacy, perché i dati restano in locale. Però rende inutile il modello esterno per gli agenti. Alla fine, con il decision model attivo, abbiamo spento il riconoscimento di entità di Presidio. Sul nostro insieme di contesti degli agenti i falsi positivi sono scesi da 18 a 0, e la valutazione non ha mostrato nuove fughe di dati.</aside>
 </section>
 
 <!-- ===================== Wrapping up ===================== -->
@@ -599,7 +571,7 @@ $ scripts/run-playbook.sh playbooks/site.yml</pre>
   </div>
   <div class="spacer"></div>
   <p class="small muted">A community demo, not a Red Hat product. LiteLLM and Presidio are community software, not supported by Red Hat. Routing between a local and an external model is Technology Preview in Red Hat OpenShift AI 3.5. The decision model runs on an unsupported preview image.</p>
-  <aside class="notes" lang="it">[0:30] Grazie. Il QR code qui a destra apre il sito: inquadratelo pure, resta sullo schermo durante le domande. Sul sito trovate il simulatore del router, il replay delle due indagini e la guida di installazione, e tutto il codice è su GitHub. Qui sotto trovate anche i miei contatti. Sono contento di rispondere alle vostre domande. (Dopo questa slide ci sono le slide di riserva: usale per le domande sulle due indagini, sui contesti grandi, sui guasti, sul decision model, sul bug Wasm e sulla riga di log.)</aside>
+  <aside class="notes" lang="it">[0:30] Grazie. Il QR code qui a destra apre il sito: inquadratelo pure, resta sullo schermo durante le domande. Sul sito trovate il simulatore del router, il replay delle due indagini e la guida di installazione, e tutto il codice è su GitHub. Qui sotto trovate anche i miei contatti. Sono contento di rispondere alle vostre domande. (Dopo questa slide ci sono le slide di riserva: usale per le domande sulle due indagini, sui contesti grandi, sui guasti, sul decision model, sul bug Wasm, sulla riga di log e sul bug del keep-alive nel gateway.)</aside>
 </section>
 
 <!-- ===================== Backup ===================== -->
@@ -703,7 +675,7 @@ $ scripts/run-playbook.sh playbooks/site.yml</pre>
     </div>
   </div>
   <footer class="foot"><span>Seen on 29 September 2026 · Connectivity Link (Kuadrant) on Envoy</span><span>sovereign-selfheal.github.io</span></footer>
-  <aside class="notes" lang="it">[riserva] Se qualcuno chiede di altri problemi del gateway. Subito dopo un’installazione, ogni richiesta di un client riceveva un errore HTTP 503, anche le richieste senza API key. La causa: uno dei due pod del gateway, all’avvio, non era riuscito a scaricare dall’operator il modulo Wasm di Kuadrant. Con la failure policy di quel filtro, Envoy tiene il modulo rotto e non riprova, quindi quel pod risponde 503 a tutto. Perché un solo client? La route è passthrough con bilanciamento per sorgente, quindi un IP client arriva sempre allo stesso pod, e per quel client falliva il 100 percento delle richieste. La correzione: l’installazione ora legge le statistiche Envoy di ogni pod del gateway, il contatore wasm.remote_load_fetch_successes, e sostituisce una volta il pod rotto. Un controllo della suite di validazione lo verifica dopo ogni installazione.</aside>
+  <aside class="notes" lang="it">[riserva] Se qualcuno chiede di problemi del gateway. Subito dopo un’installazione, ogni richiesta di un client riceveva un errore HTTP 503, anche le richieste senza API key. La causa: uno dei due pod del gateway, all’avvio, non era riuscito a scaricare dall’operator il modulo Wasm di Kuadrant. Con la failure policy di quel filtro, Envoy tiene il modulo rotto e non riprova, quindi quel pod risponde 503 a tutto. Perché un solo client? La route è passthrough con bilanciamento per sorgente, quindi un IP client arriva sempre allo stesso pod, e per quel client falliva il 100 percento delle richieste. La correzione: l’installazione ora legge le statistiche Envoy di ogni pod del gateway, il contatore wasm.remote_load_fetch_successes, e sostituisce una volta il pod rotto. Un controllo della suite di validazione lo verifica dopo ogni installazione.</aside>
 </section>
 
 <section class="slide slide--content" id="b-log-line">
@@ -722,6 +694,34 @@ $ scripts/run-playbook.sh playbooks/site.yml</pre>
   </table>
   <footer class="foot"><span>The log line and the metric names are a stable interface of the router</span><span>sovereign-selfheal.github.io</span></footer>
   <aside class="notes" lang="it">[riserva] Se qualcuno chiede come verificare le decisioni. Ogni decisione è una riga di log che inizia con policy-router, seguita da un dizionario Python: quale modello ha chiesto il client, dove è andata la richiesta, quale gate ha deciso, il team, la motivazione completa e il trace id, così si passa dal log alla trace. La live page e i nostri test end-to-end leggono questa riga, quindi è un’interfaccia stabile del router: cambiarla richiede una nuova versione minor. L’hook esporta anche metriche Prometheus: un contatore per decisione con destinazione, gate e team; un istogramma dei punteggi di privacy; i token del modello esterno per team; e le decisioni sui namespace restricted. Con queste potete sempre rispondere alla domanda: quante richieste sono uscite, da quale team, e perché.</aside>
+</section>
+
+<section class="slide slide--content" id="gateway-bug">
+  <header class="head"><p class="eyebrow">Backup</p><h2>A bug in the gateway</h2></header>
+  <p>The agent runtime asked for the model list twice. The second call never came back.</p>
+  <div class="row row--wide">
+    <pre class="code" style="width:760px">$ curl --http1.1 -H "$AUTH" \
+    $URL/v1/models $URL/v1/models
+<span class="dim">first request:  HTTP 200</span>
+<span class="dim">second request: no answer, timeout</span></pre>
+    <ol class="grow">
+      <li>The token limit reads usage.total_tokens in every answer.</li>
+      <li>A GET of the model list has no usage. The Wasm filter fails, and the answer never ends.</li>
+      <li>The next request on the same keep-alive connection waits forever.</li>
+    </ol>
+  </div>
+  <div class="row">
+    <div class="card card--tight card--local grow">
+      <p class="strong">Fix: count tokens only for POST requests</p>
+      <p class="small mono">when: request.method == 'POST'</p>
+    </div>
+    <div class="card card--tight grow">
+      <p class="strong">Lesson: test like production</p>
+      <p class="small">Our test suite opened a new connection for every call, so it never saw the bug.</p>
+    </div>
+  </div>
+  <footer class="foot"><span>Connectivity Link 1.4.3 (Kuadrant) · fixed in our policy on 2 Oct 2026</span><span>sovereign-selfheal.github.io</span></footer>
+  <aside class="notes" lang="it">[riserva] Se qualcuno chiede di un bug nel gateway. Il runtime del nostro agente partiva, chiedeva al router la lista dei modelli, poi la chiedeva di nuovo, e la seconda chiamata non tornava mai. Il runtime aspettava, il suo health check falliva e Kubernetes riavviava il pod, più e più volte. Il router funzionava: il problema era nel gateway. I nostri limiti di token, in Kuadrant, leggono il numero di token dal campo usage.total_tokens di ogni risposta. Una risposta di chat ha questo campo. La lista dei modelli, una richiesta GET, non ce l’ha. Quando il campo mancava, il filtro Wasm in Envoy falliva e la risposta non finiva mai. Con il keep-alive HTTP, la richiesta successiva sulla stessa connessione restava poi in attesa per sempre. Si riproduce con un solo comando curl e lo stesso URL due volte. La correzione è stata una riga nella nostra policy: contare i token solo per le richieste POST. E la vera lezione: la nostra suite di test apriva una nuova connessione per ogni chiamata, quindi non ha mai visto questo bug. Testate con lo stesso tipo di client che usate in produzione.</aside>
 </section>
 
 </main>
